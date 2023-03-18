@@ -1,7 +1,9 @@
-import discord
 import responses
 import random
 from discord.ext import commands
+import requests
+import discord
+import praw
 
 DISCORD_TOKEN = "MTA4NjI4MDYzMzk3MTY1MDY0MQ.GYTMQC.zYSAX0XnPWTQV6dqChNmWXG6pfpVX4p9O4dpmk"
 
@@ -85,5 +87,28 @@ async def clearuser_command(ctx, user: discord.Member, amount: int):
 @client.command(name='command')
 async def help_command(ctx):
     await ctx.send('Commands:\n!ask [question]\n!roll [xdy]\n!clearbot [amount]\n!clearuser [user] [amount]\n!help')
+
+@client.command(name='clearall')
+async def clearall_command(ctx):   
+    async for message in ctx.channel.history(limit=1000):
+        if message.author == client.user or message.author == ctx.author:
+            await message.delete()
+    print(f'{ctx.author.name} deleted all messages.')
+
+reddit = praw.Reddit(client_id='Umj3PcYICUCd-F2litkmnw',
+                    client_secret='VCIOMQnuko0O3vEdKEBcktS_00yW1g',
+                    user_agent='meme:584171:v1.0 (by /u/VaxlyQ)')
+
+@client.command(name='reddit')
+async def meme(ctx, message):
+    subreddit = reddit.subreddit(message)
+    all_subs = []
+    hot = subreddit.hot(limit=200)
+
+    for submission in hot:
+        all_subs.append(submission)
+    random_sub = random.choice(all_subs)
+
+    await ctx.send(f'{random_sub.title}\n{random_sub.url}')
 
 client.run(DISCORD_TOKEN)
