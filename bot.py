@@ -2,7 +2,6 @@ import discord
 import responses
 import random
 from discord.ext import commands
-import googlesearch
 
 DISCORD_TOKEN = "MTA4NjI4MDYzMzk3MTY1MDY0MQ.GYTMQC.zYSAX0XnPWTQV6dqChNmWXG6pfpVX4p9O4dpmk"
 
