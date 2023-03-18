@@ -23,23 +23,23 @@ async def on_ready():
 
 @client.command(name='ask')
 async def ask(ctx, *, question):
-    ask_command(ctx, question)
+    await ask_command(ctx, question)
 
 @client.command(name='roll')
 async def roll(ctx, dice: str):
-    roll_command(ctx, dice)
+    await roll_command(ctx, dice)
 
 @client.command(name='clearbot')
 async def clearbot(ctx, amount: int):
-    clear_command(ctx, amount)
+    await clear_command(ctx, amount)
 
 @client.command(name='clearuser')
 async def clearuser(ctx, user: discord.Member, amount: int):
-    clearuser_command(ctx, user, amount)
+    await clearuser_command(ctx, user, amount)
 
 @client.command(name='clearall')
 async def clearall(ctx):
-    clear_command(ctx, 1000)
+    await clear_command(ctx, 1000)
 
 
 reddit = praw.Reddit(client_id='Umj3PcYICUCd-F2litkmnw',
