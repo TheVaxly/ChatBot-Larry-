@@ -68,17 +68,34 @@ async def clear_command(ctx, amount: int):
     print(f'{ctx.author.name} deleted {to_delete} bot messages')
 
 @client.command(name='clearuser')
-async def clearuser_command(ctx, user: discord.Member, amount: int):
-    messages = []
-    async for message in ctx.channel.history(limit=100):
-        if message.author == user:
-            messages.append(message)
-    to_delete = min(amount, len(messages))
-    if to_delete <= 0:
-        await ctx.send(f"```No messages found for user {user.name}.```")
+async def clearuser_command(ctx, user: discord.Member = None, amount: int = None):
+    try:
+        if user is None:
+            await ctx.send("```Please specify a user.```")
+            return
+        elif amount is None:
+            await ctx.send("```Please specify the number of messages to delete.```")
+            return
+
+        messages = []
+        async for message in ctx.channel.history(limit=100):
+            if message.author == user:
+                messages.append(message)
+        to_delete = min(amount, len(messages))
+        if to_delete <= 0:
+            await ctx.send(f"```Invalid amount.```")
+            return
+        elif to_delete > 100:
+            await ctx.send(f"```Maximum number of messages that can be deleted is 100.```")
+            return
+        
+        for i in range(to_delete):
+            await messages[i].delete()
+
+        await ctx.send(f"{to_delete} messages from {user.mention} have been deleted.")
+    except Exception:
+        await ctx.send("```An error occurred while deleting messages.```")
         return
-    for i in range(to_delete):
-        await messages[i].delete()
     print(f'{ctx.author.name} deleted {to_delete} messages from {user.name}')
 
 @client.command(name='command')
@@ -86,10 +103,12 @@ async def help_command(ctx):
     await ctx.send('```Commands:\n!ask [question]\n!roll [xdy]\n!clearbot [amount]\n!clearuser [user] [amount]\n!help```')
 
 @client.command(name='clearall')
-async def clearall_command(ctx):   
+async def clearall_command(ctx):
     async for message in ctx.channel.history(limit=None):
         if message.author == client.user or message.author == ctx.author:
             await message.delete()
+    await ctx.send(f"{ctx.guild.default_role}")
+    await ctx.send(f"```All messages have been deleted.```")
     print(f'{ctx.author.name} deleted all messages.')
 
 reddit = praw.Reddit(client_id='Umj3PcYICUCd-F2litkmnw',
