@@ -1,19 +1,17 @@
-import os
 import discord
 import openai
-from dotenv import load_dotenv
 
-load_dotenv()
-
-DISCORD_TOKEN = os.getenv('DISCORD_TOKEN')
-OPENAI_API_KEY = os.getenv('OPENAI_API_KEY')
+DISCORD_TOKEN = "MTA4NjI4MDYzMzk3MTY1MDY0MQ.GYTMQC.zYSAX0XnPWTQV6dqChNmWXG6pfpVX4p9O4dpmk"
+OPENAI_API_KEY = "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"
 
 openai.api_key = OPENAI_API_KEY
-model_engine = "davinci"
 
 memory = {}
 
-client = discord.Client()
+intents = discord.Intents.all()
+intents.members = True
+
+client = discord.Client(intents=intents)
 
 @client.event
 async def on_ready():
@@ -33,9 +31,11 @@ async def on_message(message):
         prev_inputs = memory[message.channel.id]
         prompt = '\n'.join(prev_inputs + [user_input])
         memory[message.channel.id].append(user_input)
+        user_name = message.author.name
+        channel = message.channel.name
 
         response = openai.Completion.create(
-            engine=model_engine,
+            engine="text-davinci-002",
             prompt=prompt,
             max_tokens=1024,
             n=1,
@@ -45,5 +45,6 @@ async def on_message(message):
 
         bot_response = response.choices[0].text.strip()
         await message.channel.send(bot_response)
+        print(f'{user_name} asked: {user_input} in #{channel}')
 
 client.run(DISCORD_TOKEN)
