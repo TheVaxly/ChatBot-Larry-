@@ -87,7 +87,7 @@ async def help_command(ctx):
 
 @client.command(name='clearall')
 async def clearall_command(ctx):   
-    async for message in ctx.channel.history(limit=1000):
+    async for message in ctx.channel.history(limit=None):
         if message.author == client.user or message.author == ctx.author:
             await message.delete()
     print(f'{ctx.author.name} deleted all messages.')
@@ -98,14 +98,26 @@ reddit = praw.Reddit(client_id='Umj3PcYICUCd-F2litkmnw',
 
 @client.command(name='reddit')
 async def meme(ctx, message):
-    subreddit = reddit.subreddit(message)
-    all_subs = []
-    hot = subreddit.hot(limit=100)
+    try:
+        subreddit = reddit.subreddit(message)
+        all_subs = []
+        hot = subreddit.hot(limit=100)
 
-    for submission in hot:
-        all_subs.append(submission)
-    random_sub = random.choice(all_subs)
+        for submission in hot:
+            all_subs.append(submission)
 
-    await ctx.send(f'```{random_sub.title}```\n{random_sub.url}')
+        while True:
+            random_sub = random.choice(all_subs)
+            all_subs.remove(random_sub)
+            if random_sub.stickied:
+                continue
+            else:
+                break
+
+        await ctx.send(f'```{random_sub.title}```\n{random_sub.url}')
+    except Exception:
+        await ctx.send(f'```Invalid subreddit.```')
+        return
+    print(all_subs)
 
 client.run(DISCORD_TOKEN)
