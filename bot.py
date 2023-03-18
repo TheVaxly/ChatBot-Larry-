@@ -86,4 +86,11 @@ async def clearuser_command(ctx, user: discord.Member, amount: int):
 async def help_command(ctx):
     await ctx.send('Commands:\n!ask [question]\n!roll [xdy]\n!clearbot [amount]\n!clearuser [user] [amount]\n!help')
 
+@client.command(name='clearall')
+async def clearall_command(ctx):   
+    async for message in ctx.channel.history(limit=1000):
+        if message.author == client.user or message.author == ctx.author:
+            await message.delete()
+    print(f'{ctx.author.name} deleted all messages.')
+
 client.run(DISCORD_TOKEN)
