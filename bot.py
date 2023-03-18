@@ -50,4 +50,36 @@ async def roll_command(ctx, *, dice: str = ''):
         print(f'{ctx.author.name} rolled {result}')
         print(f'Dice history: {dice_history}')
 
+@client.command(name='clearbot')
+async def clear_command(ctx, amount: int):
+    bot_messages = []
+    async for message in ctx.channel.history(limit=100):
+        if message.author == client.user:
+            bot_messages.append(message)
+    to_delete = min(amount, len(bot_messages))
+    if to_delete <= 0:
+        await ctx.send("Invalid amount.")
+        return
+    for i in range(to_delete):
+        await bot_messages[i].delete()
+    print(f'{ctx.author.name} deleted {to_delete} bot messages')
+
+@client.command(name='clearuser')
+async def clearuser_command(ctx, user: discord.Member, amount: int):
+    messages = []
+    async for message in ctx.channel.history(limit=100):
+        if message.author == user:
+            messages.append(message)
+    to_delete = min(amount, len(messages))
+    if to_delete <= 0:
+        await ctx.send(f"No messages found for user {user.name}.")
+        return
+    for i in range(to_delete):
+        await messages[i].delete()
+    print(f'{ctx.author.name} deleted {to_delete} messages from {user.name}')
+
+@client.command(name='command')
+async def help_command(ctx):
+    await ctx.send('Commands:\n!ask [question]\n!roll [xdy]\n!clearbot [amount]\n!clearuser [user] [amount]\n!help')
+
 client.run(DISCORD_TOKEN)
