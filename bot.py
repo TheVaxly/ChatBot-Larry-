@@ -13,6 +13,7 @@ intents.members = True
 client = commands.Bot(command_prefix='!', intents=intents)
 
 dice_history = []
+symbol = "```"
 
 @client.event
 async def on_ready():
@@ -24,35 +25,31 @@ async def ask_command(ctx, *, user_input):
     channel = ctx.channel.name
 
     bot_response = responses.send_responses(user_input)
-    symbol = "```"
 
-    if "code" or "program" or "python" or "pygame" or "javascript" or "html" or "c#" or "c++" or "js" or "php" in bot_response:
-        bot_response = symbol + bot_response + symbol
-
-    await ctx.send(bot_response)
+    await ctx.send(symbol + bot_response + symbol)
     print(f'{user_name} asked: {user_input} in #{channel}')
 
 @client.command(name='roll')
 async def roll_command(ctx, *, dice: str = ''):
     if dice == 'last':
         if len(dice_history) < 2:
-            await ctx.send('There is no previous dice roll in the history.')
+            await ctx.send('```There is no previous dice roll in the history.```')
             return
         rolls, limit = dice_history[-2:]
         result = ', '.join(str(random.randint(1, limit)) for _ in range(rolls))
-        await ctx.send(result)
+        await ctx.send(symbol + result + symbol)
         print(f'{ctx.author.name} rolled {result}')
     else:
         try:
             rolls, limit = map(int, dice.split('d'))
         except Exception:
-            await ctx.send('Invalid dice format or command.')
+            await ctx.send('```Invalid dice format or command.```')
             return
 
         result = ', '.join(str(random.randint(1, limit)) for _ in range(rolls))
         dice_history[-2:] = [rolls, limit]
 
-        await ctx.send(result)
+        await ctx.send(symbol + result + symbol)
         print(f'{ctx.author.name} rolled {result}')
         print(f'Dice history: {dice_history}')
 
@@ -64,7 +61,7 @@ async def clear_command(ctx, amount: int):
             bot_messages.append(message)
     to_delete = min(amount, len(bot_messages))
     if to_delete <= 0:
-        await ctx.send("Invalid amount.")
+        await ctx.send("```Invalid amount.```")
         return
     for i in range(to_delete):
         await bot_messages[i].delete()
@@ -78,7 +75,7 @@ async def clearuser_command(ctx, user: discord.Member, amount: int):
             messages.append(message)
     to_delete = min(amount, len(messages))
     if to_delete <= 0:
-        await ctx.send(f"No messages found for user {user.name}.")
+        await ctx.send(f"```No messages found for user {user.name}.```")
         return
     for i in range(to_delete):
         await messages[i].delete()
@@ -86,7 +83,7 @@ async def clearuser_command(ctx, user: discord.Member, amount: int):
 
 @client.command(name='command')
 async def help_command(ctx):
-    await ctx.send('Commands:\n!ask [question]\n!roll [xdy]\n!clearbot [amount]\n!clearuser [user] [amount]\n!help')
+    await ctx.send('```Commands:\n!ask [question]\n!roll [xdy]\n!clearbot [amount]\n!clearuser [user] [amount]\n!help```')
 
 @client.command(name='clearall')
 async def clearall_command(ctx):   
@@ -103,12 +100,12 @@ reddit = praw.Reddit(client_id='Umj3PcYICUCd-F2litkmnw',
 async def meme(ctx, message):
     subreddit = reddit.subreddit(message)
     all_subs = []
-    hot = subreddit.hot(limit=200)
+    hot = subreddit.hot(limit=100)
 
     for submission in hot:
         all_subs.append(submission)
     random_sub = random.choice(all_subs)
 
-    await ctx.send(f'{random_sub.title}\n{random_sub.url}')
+    await ctx.send(f'```{random_sub.title}```\n{random_sub.url}')
 
 client.run(DISCORD_TOKEN)
