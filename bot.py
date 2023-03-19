@@ -1,6 +1,6 @@
 from discord.ext import commands
 import discord
-import clear_all, clear_user, roll, reddit, ask
+import clear_user, roll, reddit, ask
 import asyncio
 
 DISCORD_TOKEN = "MTA4NjI4MDYzMzk3MTY1MDY0MQ.GYTMQC.zYSAX0XnPWTQV6dqChNmWXG6pfpVX4p9O4dpmk"
@@ -9,9 +9,6 @@ intents = discord.Intents.all()
 intents.members = True
 
 client = commands.Bot(command_prefix='!', intents=intents)
-
-dice_history = []
-symbol = "```"
 
 @client.event
 async def on_ready():
