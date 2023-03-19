@@ -22,7 +22,7 @@ async def meme(ctx, message):
             else:
                 break
 
-        await ctx.send(f'```{random_sub.title}```\n{random_sub.url}')
+        await ctx.send(f'``{random_sub.title}``\n{random_sub.url}')
     except Exception:
-        await ctx.send(f'```Invalid subreddit.```')
+        await ctx.send(f'``Invalid subreddit.``')
         return
