@@ -106,8 +106,8 @@ async def clearall_command(ctx):
     async for message in ctx.channel.history(limit=None):
         if message.author == client.user or message.author == ctx.author:
             await message.delete()
-        await ctx.send(f"{ctx.guild.default_role}")
-        await ctx.send(f"```All messages have been deleted.```")
+    await ctx.send(f"{ctx.guild.default_role}")
+    await ctx.send(f"```All messages have been deleted.```")
     print(f'{ctx.author.name} deleted all messages.')
 
 reddit = praw.Reddit(client_id='Umj3PcYICUCd-F2litkmnw',
