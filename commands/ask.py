@@ -1,4 +1,4 @@
-import responses
+import commands.responses as responses
 
 symbol = "```"
 
