@@ -1,6 +1,6 @@
 from discord.ext import commands
 import discord
-import commands.clear_user as clear_user, commands.roll as roll, commands.reddit as reddit, commands.ask as ask, commands.nickname as nickname
+import commands.clear_user as clear_user, commands.roll as roll, commands.reddit as reddit, commands.ask as ask
 import asyncio
 
 DISCORD_TOKEN = "MTA4NjI4MDYzMzk3MTY1MDY0MQ.GCCcVx.B4MT8-wbRIG8aU--Hp7vgSZvFcE7hv7jvzlsic"
