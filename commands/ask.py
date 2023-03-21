@@ -11,12 +11,6 @@ async def ask_command(ctx, *, user_input):
 
         await ctx.send(symbol + bot_response + symbol)
     except Exception:
-        await ctx.send("``Add a question.``")
-
-
-
-
-
-        
+        await ctx.send("``There was an error``")
         return
     print(f'{user_name} asked: {user_input} in #{channel}')
