@@ -95,4 +95,9 @@ async def clear_all(ctx):
 async def meme(ctx, message):
     await reddit.meme(ctx, message)
 
+@client.command(name='nick')
+async def change_nickname(ctx, user: discord.Member, nickname: str):
+    await user.edit(nick=nickname)
+    await ctx.send(f"Nickname changed to {nickname}")
+
 client.run(DISCORD_TOKEN)
