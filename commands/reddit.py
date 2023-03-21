@@ -1,9 +1,12 @@
 import praw
 import random
+import os
+from dotenv import load_dotenv
+load_dotenv()
 
-reddit = praw.Reddit(client_id='Umj3PcYICUCd-F2litkmnw',
-                    client_secret='VCIOMQnuko0O3vEdKEBcktS_00yW1g',
-                    user_agent='meme:584171:v1.0 (by /u/VaxlyQ)')
+reddit = praw.Reddit(client_id=os.getenv('client_id'),
+                    client_secret=os.getenv('client_secret'),
+                    user_agent=os.getenv('user_agent'))
 
 async def meme(ctx, message):
     try:

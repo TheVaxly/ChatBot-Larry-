@@ -2,8 +2,10 @@ from discord.ext import commands
 import discord
 import commands.clear_user as clear_user, commands.roll as roll, commands.reddit as reddit, commands.ask as ask
 import asyncio
-
-DISCORD_TOKEN = "MTA4NjI4MDYzMzk3MTY1MDY0MQ.GCCcVx.B4MT8-wbRIG8aU--Hp7vgSZvFcE7hv7jvzlsic"
+import os
+from dotenv import load_dotenv
+load_dotenv()
+from commands.responses import send_responses
 
 intents = discord.Intents.all()
 intents.members = True
@@ -14,6 +16,7 @@ client = commands.Bot(command_prefix='!', intents=intents)
 async def on_ready():
     print('Logged in as {0.user}'.format(client))
     await client.change_presence(status=discord.Status.dnd, activity=discord.Game(name="rule34"))
+    await client.tree.sync()
 
 @client.command(name='ask')
 async def ask_command(ctx, *, user_input="Tell me a joke"):
@@ -70,4 +73,16 @@ async def clear_all(ctx):
 async def meme(ctx, message):
     await reddit.meme(ctx, message)
 
-client.run(DISCORD_TOKEN)
+@client.tree.command(name='ask', description="Ask bot yes very many uwu")
+@discord.app_commands.describe(question='What do you want to ask the bot? uwu')
+async def ask(int: discord.Interaction, question: str):
+    try:
+        await int.response.defer(thinking=True)
+        bot_response = send_responses(question)
+        await int.followup.send(content=f'Question: {question}\n```{bot_response}```')
+    except Exception:
+        print(f"Err: {Exception}")
+        return
+    
+
+client.run(os.getenv('token'))
