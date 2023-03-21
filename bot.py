@@ -16,8 +16,33 @@ async def on_ready():
     await client.change_presence(status=discord.Status.dnd, activity=discord.Game(name="rule34"))
 
 @client.command(name='ask')
-async def ask_command(ctx, *, user_input="Tell me a joke"):
-    await ask.ask_command(ctx, user_input=user_input)
+async def ask_command(ctx, *, user_input="who is your yyy"):
+    if user_input == "who is marten" or  user_input == "who is marten uiboupin" or user_input == "who is your creator":
+        await ctx.send("```Marten is my creator.```")
+        return
+    elif user_input == "is marten your creator":
+        await ctx.send("```Yes he is indeed.```")
+        return
+    elif user_input == "who is your yyy":
+        await ctx.send("```Worship Marten or else.```")
+        return
+    elif user_input == "who is your daddy":
+        await ctx.send("```Marten is my daddy.```")
+        return
+    elif user_input == "who are you" or user_input == "who are you?":
+        await ctx.send("```I am a black man Dewayne.```")
+        return
+    elif user_input == "what is your name?" or user_input == "what is your name" or user_input == "is your name Dewayne":
+        await ctx.send("```My name is Dewayne.```")
+        return
+    elif user_input == "are you black man Dewayne":
+        await ctx.send("```Yes I am.```")
+        return 
+    elif user_input == "can Raiden Shogun cook?":
+        await ctx.send("```No she only produces milk.```")
+        return
+    else:
+        await ask.ask_command(ctx, user_input=user_input)
 
 @client.command(name='roll')
 async def roll_command(ctx, *, dice: str = ''):
