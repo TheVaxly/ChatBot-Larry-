@@ -73,9 +73,9 @@ async def clear_all(ctx):
 async def meme(ctx, message):
     await reddit.meme(ctx, message)
 
-@client.tree.command(name='ask', description="Ask bot yes very many uwu")
+@client.tree.command(name='larry', description="Ask bot yes very many uwu")
 @discord.app_commands.describe(question='What do you want to ask the bot? uwu')
-async def ask(int: discord.Interaction, question: str):
+async def larry(int: discord.Interaction, question: str):
     try:
         await int.response.defer(thinking=True)
         bot_response = send_responses(question)
@@ -83,6 +83,5 @@ async def ask(int: discord.Interaction, question: str):
     except Exception:
         print(f"Err: {Exception}")
         return
-    
 
 client.run(os.getenv('token'))
