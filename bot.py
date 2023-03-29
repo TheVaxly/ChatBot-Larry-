@@ -6,6 +6,7 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 from commands.responses import send_responses
+from googleapiclient.discovery import build
 
 intents = discord.Intents.all()
 intents.members = True
@@ -72,6 +73,22 @@ async def clear_all(ctx):
 @client.command(name='reddit')
 async def meme(ctx, message):
     await reddit.meme(ctx, message)
+
+@client.command(name='subs')
+async def subscribers(ctx, *, user_input):
+    try:    
+        api_service_name = "youtube"
+        api_version = "v3"
+        key=os.getenv("key")
+        youtube = build(api_service_name, api_version, developerKey=key)
+        request = youtube.channels().list(part="statistics", forUsername=user_input)
+        response = request.execute()
+        print(response)
+        subscirbers = response["items"][0]["statistics"]["subscriberCount"]
+        await ctx.send(f"``{user_input} has {subscirbers} subscribers``")
+    except Exception:
+        await ctx.send("``No subscribers count found.``")
+        return
 
 @client.tree.command(name='larry', description="Ask bot yes very many uwu")
 @discord.app_commands.describe(question='What do you want to ask the bot? uwu')
