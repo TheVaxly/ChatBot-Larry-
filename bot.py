@@ -96,20 +96,56 @@ async def rps(ctx, message=None):
     else:
         await game.game(ctx, message)
 
+# create a connection to the database
+conn = sqlite3.connect('balances.db')
+
+# create a table to store the balances
+conn.execute('''CREATE TABLE IF NOT EXISTS balances
+             (user_id INT PRIMARY KEY NOT NULL, balance INT NOT NULL)''')
+
+# check if the user has a balance, create one if not
+def get_balance(user_id):
+    cursor = conn.execute("SELECT balance FROM balances WHERE user_id=?", (user_id,))
+    row = cursor.fetchone()
+    if row is None:
+        conn.execute("INSERT INTO balances (user_id, balance) VALUES (?, ?)", (user_id, 100))
+        conn.commit()
+        return 100
+    else:
+        return row[0]
+
+# update user balance after a bet is placed
+def update_balance(user_id, amount):
+    cursor = conn.execute("SELECT balance FROM balances WHERE user_id=?", (user_id,))
+    row = cursor.fetchone()
+    balance = row[0] + amount
+    conn.execute("UPDATE balances SET balance=? WHERE user_id=?", (balance, user_id))
+    conn.commit()
+
+# command to play blackjack with individual user balances
 @client.command(name='blackjack', help="Play blackjack")
-async def blackjack(ctx, bet: int):
-    bets = bet * 1.5 + bet
-    bets = int(bets)
-    bets2 = bet + bet
-    chips = []
-    chips.append(bet)
-    # check if the player has enough money to place the bet
-    if bet > 0 and bet <= 100:
-        # create a deck of cards
-        suits = ["Hearts", "Diamonds", "Spades", "Clubs"]
-        ranks = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King"]
-        deck = [(rank, suit) for suit in suits for rank in ranks]
-        random.shuffle(deck)
+async def blackjack(ctx, bet: int=None):
+    balance = get_balance(ctx.author.id)
+    if bet is None:
+        await ctx.send("``Please enter a valid bet.``")
+        return
+    elif bet > balance:
+        await ctx.send("``You don't have enough money to place that bet.``")
+        return
+    else:
+        player = ctx.author
+        if bet > 0 and bet <= 100:
+            update_balance(player.id, -bet)
+
+        # calculate the amount to be paid out for a blackjack
+        blackjack_payout = int(bet * 1.5)
+        # check if the player has enough money to place the bet
+        if bet > 0 and bet <= 100:
+            # create a deck of cards
+            suits = ["Hearts", "Diamonds", "Spades", "Clubs"]
+            ranks = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King"]
+            deck = [(rank, suit) for suit in suits for rank in ranks]
+            random.shuffle(deck)
 
             # deal the cards
             player_hand = [deck.pop(), deck.pop()]
@@ -119,75 +155,82 @@ async def blackjack(ctx, bet: int):
             player_value = calculate_hand(player_hand)
             dealer_value = calculate_hand(dealer_hand)
 
-        # let the player take their turn
-        while True:
-            # show the player's hand and ask for their move
-            await ctx.send(f"``Your hand: {', '.join(card[0] + ' of ' + card[1] for card in player_hand)}``")
-            await ctx.send(f"``Dealer's hand: {dealer_hand[0][0]} of {dealer_hand[0][1]}, HIDDEN CARD``")
-            move = await client.wait_for('message', check=lambda m: m.author == ctx.author)
+            # let the player take their turn
+            while True:
+                # show the player's hand and ask for their move
+                await ctx.send(f"``Your hand: {', '.join(card[0] + ' of ' + card[1] for card in player_hand)} = {player_value}``")
+                await ctx.send(f"``Dealer's hand: {dealer_hand[0][0]} of {dealer_hand[0][1]}, HIDDEN CARD``")
+                move = await client.wait_for('message', check=lambda m: m.author == player)
 
-            # handle the player's move
-            if move.content.lower() == "!hit":
-                # draw a card and add it to the player's hand
-                player_hand.append(deck.pop())
-                player_value = calculate_hand(player_hand)
+                if move.author != ctx.author:
+                    await ctx.send("``Only the player can make a move.``")
+                    continue
+                # handle the player's move
+                if move.content.lower() == "!hit":
+                    # draw a card and add it to the player's hand
+                    player_hand.append(deck.pop())
+                    player_value = calculate_hand(player_hand)
 
-                # check if the player busted
-                if player_value > 21:
-                    await ctx.send(f"``You busted! Your hand is worth {player_value}. You lost {bet} chips.``")
-
+                    # check if the player busted
+                    if player_value > 21:
+                        await ctx.send(f"``You busted! Your hand is worth {player_value}. You lost {bet} chips.``")
+                        update_balance(player.id, -bet)
+                        break
+                elif move.content.lower() == "!stand":
+                    # the player is done taking their turn
                     break
-            elif move.content.lower() == "!stand":
-                # the player is done taking their turn
-                break
 
-        # let the dealer take their turn
-        if player_value <= 21:
-            await ctx.send(f"``The dealer's HIDDEN CARD was {dealer_hand[1][0]} of {dealer_hand[1][1]}``")
-            while dealer_value < 17:
-                # draw a card and add it to the dealer's hand
-                dealer_hand.append(deck.pop())
-                dealer_value = calculate_hand(dealer_hand)
+            # let the dealer take their turn
+            if player_value <= 21:
+                await ctx.send(f"``The dealer's HIDDEN CARD was {dealer_hand[1][0]} of {dealer_hand[1][1]}``")
+                while dealer_value <= 20 and dealer_value < player_value:
+                    # draw a card and add it to the dealer's hand
+                    dealer_hand.append(deck.pop())
+                    dealer_value = calculate_hand(dealer_hand)
 
-            # show the final hands
-            await ctx.send(f"``Your hand: {', '.join(card[0] + ' of ' + card[1] for card in player_hand)}``")
-            await ctx.send(f"``Dealer's hand: {', '.join(card[0] + ' of ' + card[1] for card in dealer_hand)}``")
+                # show the final hands
+                await ctx.send(f"``Your hand: {', '.join(card[0] + ' of ' + card[1] for card in player_hand)} = {player_value}``")
+                await ctx.send(f"``Dealer's hand: {', '.join(card[0] + ' of ' + card[1] for card in dealer_hand)} = {dealer_value}``")
 
-            # determine the winner
-            if dealer_value > 21:
-                await ctx.send(f"``The dealer busted! You win {bets2} chips!``")
-            elif dealer_value == player_value:
-                await ctx.send(f"``It's a tie! You get {bet} chips back.``")
-            elif dealer_value > player_value:
-                await ctx.send("``The dealer wins!``")
-            elif dealer_value < player_value and player_value == 21:
-                await ctx.send(f"``BLACKJACK! You win {bets} chips!``")
-    else:
-        await ctx.send("``Invalid bet. Please bet between 1 and 100 chips.``")
+                # determine the winner
+                if dealer_value > 21:
+                    await ctx.send(f"``The dealer busted! You win {bet} chips!``")
+                    update_balance(player.id, 2*bet)
+                elif dealer_value == player_value:
+                    await ctx.send(f"``It's a tie! You get {bet} chips back.``")
+                    update_balance(player.id, bet)
+                elif dealer_value > player_value:
+                    await ctx.send("``The dealer wins!``")
+                elif dealer_value < player_value and player_value == 21:
+                    await ctx.send(f"``BLACKJACK! You win {blackjack_payout} chips!``")
+                    update_balance(player.id, blackjack_payout + bet)
+        else:
+            await ctx.send("``Invalid bet. Please bet between 1 and 100 chips.``")
+            return
 
 def calculate_hand(hand):
-    # calculate the value of a hand
-    values = {
-        "Ace": 11,
-        "2": 2,
-        "3": 3,
-        "4": 4,
-        "5": 5,
-        "6": 6,
-        "7": 7,
-        "8": 8,
-        "9": 9,
-        "10": 10,
-        "Jack": 10,
-        "Queen": 10,
-        "King": 10
-        }
-    num_aces = sum(card[0] == "Ace" for card in hand)
-    value = sum(values[card[0]] for card in hand)
-    while num_aces > 0 and value > 21:
-        value -= 10
-        num_aces -= 1
-    return value
+        # calculate the value of a hand
+        values = {
+            "Ace": 11,
+            "2": 2,
+            "3": 3,
+            "4": 4,
+            "5": 5,
+            "6": 6,
+            "7": 7,
+            "8": 8,
+            "9": 9,
+            "10": 10,
+            "Jack": 10,
+            "Queen": 10,
+            "King": 10
+            }
+        num_aces = sum(card[0] == "Ace" for card in hand)
+        value = sum(values[card[0]] for card in hand)
+        while num_aces > 0 and value > 21:
+            value -= 10
+            num_aces -= 1
+        return value
 
 @client.command(name='bal', help="Check your Blackjack balance")
 async def balance(ctx):
@@ -205,7 +248,7 @@ async def leaderboard(ctx):
     leaderboard = ''
     for i in range(len(rows)):
         user = client.get_user(rows[i][0])
-        leaderboard += f"{i+1}. {user.name} - {rows[i][1]} chips "
+        leaderboard += f"{i+1}. {user.name} - {rows[i][1]} chips   "
 
     await ctx.send(f"``{leaderboard}``")
     
