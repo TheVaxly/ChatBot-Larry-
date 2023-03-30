@@ -121,7 +121,7 @@ async def blackjack(ctx, bet: int):
             move = await client.wait_for('message', check=lambda m: m.author == ctx.author)
 
             # handle the player's move
-            if move.content.lower() == "!hit" and ctx.author == ctx.author:
+            if move.content.lower() == "!hit":
                 # draw a card and add it to the player's hand
                 player_hand.append(deck.pop())
                 player_value = calculate_hand(player_hand)
