@@ -248,7 +248,7 @@ async def leaderboard(ctx):
     leaderboard = ''
     for i in range(len(rows)):
         user = client.get_user(rows[i][0])
-        leaderboard += f"{i+1}. {user.name} - {rows[i][1]} chips    "
+        leaderboard += f"{i+1}. {user.name} - {rows[i][1]} chips "
 
     await ctx.send(f"``{leaderboard}``")
     
