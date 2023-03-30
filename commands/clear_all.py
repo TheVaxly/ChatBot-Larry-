@@ -15,7 +15,7 @@ async def clear_all(ctx):
         await client.wait_for('message', check=check, timeout=30)
     except asyncio.TimeoutError:
         await warning_msg.delete()
-        await ctx.send("Command canceled. You did not confirm within 30 seconds.")
+        await ctx.send("``Command canceled. You did not confirm within 30 seconds.``")
         return
     else:
         await warning_msg.delete()

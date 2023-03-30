@@ -22,11 +22,10 @@ async def clearuser_command(ctx, user: discord.Member = None, amount: int = None
             await ctx.send(f"``Maximum number of messages that can be deleted is 100.``")
             return
         
-        for i in range(to_delete):
-            await messages[i].delete()
+        await ctx.channel.delete_messages(messages[:to_delete])
 
         await ctx.send(f"{to_delete} messages from {user.mention} have been deleted.")
+        print(f'{ctx.author.name} deleted {to_delete} messages from {user.name}')
     except Exception:
         await ctx.send("``An error occurred while deleting messages.``")
         return
-    print(f'{ctx.author.name} deleted {to_delete} messages from {user.name}')

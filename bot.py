@@ -1,6 +1,6 @@
 from discord.ext import commands
 import discord
-import commands.clear_user as clear_user, commands.roll as roll, commands.reddit as reddit, commands.ask as ask
+import commands.clear_user as clear_user, commands.roll as roll, commands.reddit as reddit, commands.ask as ask, commands.game as game
 import asyncio
 import os
 from dotenv import load_dotenv
@@ -27,21 +27,6 @@ async def ask_command(ctx, *, user_input="Tell me a joke"):
 async def roll_command(ctx, *, dice: str = ''):
     await roll.roll_command(ctx, dice=dice)
 
-@client.command(name='clearbot')
-async def clear_command(ctx, amount: int):
-    bot_messages = []
-    async for message in ctx.channel.history(limit=None):
-        if message.author == client.user:
-            bot_messages.append(message)
-    to_delete = min(amount, len(bot_messages))
-    if to_delete <= 0:
-        await ctx.send("``Invalid amount.``")
-        return
-    for i in range(to_delete):
-        await bot_messages[i].delete()
-    await ctx.send(f"``{to_delete} bot messages have been deleted.``")
-    print(f'{ctx.author.name} deleted {to_delete} bot messages')
-
 @client.command(name='clearuser')
 async def clearuser_command(ctx, user: discord.Member = None, amount: int = None):
     await clear_user.clearuser_command(ctx, user, amount)
@@ -63,9 +48,7 @@ async def clear_all(ctx):
         return
     else:
         await warning_msg.delete()
-    async for message in ctx.channel.history(limit=None):
-        if message.author == ctx.guild.me or message.author == ctx.author:
-            await message.delete()
+    await ctx.channel.purge(limit=None)
     await ctx.send(f"``All messages have been deleted.``")
 
     print(f"{ctx.author.name} deleted all messages.")
@@ -100,5 +83,13 @@ async def larry(int: discord.Interaction, question: str):
     except Exception:
         print(f"Err: {Exception}")
         return
+
+@client.command(name='rps', help="Play rock paper scissors")
+async def rps(ctx, message=None):
+    if message == None:
+        await ctx.send("``Please enter a valid move.``")
+        return  
+    else:
+        await game.game(ctx, message)
 
 client.run(os.getenv('token'))
