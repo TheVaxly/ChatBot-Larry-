@@ -40,8 +40,11 @@ async def meme(ctx, message):
                 break
         view = DeleteButton(timeout=10 * 60)
         
-        view.message = await ctx.send(content=f'``{random_sub.title}``\n{random_sub.url}', view=view)
+        embed = discord.Embed(title=random_sub.title, url=random_sub.url, color=discord.Color.gold())
+        embed.set_image(url=random_sub.url)
+        embed.set_footer(text=f"👍 {random_sub.score} | 💬 {random_sub.num_comments}")
+        await ctx.send(embed=embed, view=view)
     except Exception as e:
         print(f'Error: {e}')
-        await ctx.send(f'``Invalid subreddit.``')
+        await ctx.send(embed=discord.Embed(title="Invalid subreddit.", description="Please enter a valid subreddit.", color=discord.Color.red()))
         return
