@@ -2,7 +2,7 @@ from discord.ext import commands
 import discord
 import commands.roll as roll, commands.reddit as reddit, commands.ask as ask, commands.game as game, commands.bal as bal, commands.free_chips as free_chips
 import commands.exchange_chips as exchange_chips, commands.exchange_coins as exchange_coins, commands.shop as shop, commands.leaderboard as leaderboard, commands.blackjack as blackjack
-import commands.clearall as clearll
+import commands.clearall as clearll, commands.youtube as youtube
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -41,20 +41,8 @@ async def meme(ctx, message=None):
     await reddit.meme(ctx, message)
 
 @client.command(name='subs', help="Get the subscriber count of a channel (Probs doesn't work)")
-async def subscribers(ctx, *, user_input):
-    try:    
-        api_service_name = "youtube"
-        api_version = "v3"
-        key=os.getenv("key")
-        youtube = build(api_service_name, api_version, developerKey=key)
-        request = youtube.channels().list(part="statistics", forUsername=user_input)
-        response = request.execute()
-        print(response)
-        subscirbers = response["items"][0]["statistics"]["subscriberCount"]
-        await ctx.send(f"``{user_input} has {subscirbers} subscribers``")
-    except Exception:
-        await ctx.send("``No subscribers count found.``")
-        return
+async def subscribersy(ctx, user_input):
+    await youtube.subscribers(ctx, user_input)
 
 @client.tree.command(name='larry', description="Ask bot yes very many uwu")
 @discord.app_commands.describe(question='What do you want to ask the bot? uwu')

@@ -88,6 +88,7 @@ async def blackjack(ctx, bet: int=0, client=None):
                     embed.add_field(name="Dealer's Hand", value=f"{', '.join(card[0] + ' of ' + card[1] for card in dealer_hand)} = {dealer_value}", inline=False)
                     embed.add_field(name="Result", value="Blackjack! You win automatically!", inline=False)
                     await thread.send(embed=embed)
+                    await asyncio.sleep(10)
                     await thread.delete()
                     return
 
