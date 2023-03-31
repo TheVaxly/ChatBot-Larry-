@@ -31,8 +31,14 @@ async def roll_command(ctx, *, dice: str = ''):
 @commands.has_role('Owner')
 async def clear_alls(ctx, client=client):
     await clearll.clear_all(ctx, client=client)
+async def clear_alls(ctx, client=client):
+    await clearll.clear_all(ctx, client=client)
 
 @client.command(name='reddit', help="Get a random post from a subreddit")
+async def meme(ctx, message=None):
+    if message is None:
+        await ctx.send(embed=discord.Embed(title="Invalid", description="``Please provide a subreddit.``", color=discord.Color.red()))
+        return
 async def meme(ctx, message=None):
     if message is None:
         await ctx.send(embed=discord.Embed(title="Invalid", description="``Please provide a subreddit.``", color=discord.Color.red()))
@@ -58,6 +64,7 @@ async def larry(int: discord.Interaction, question: str):
 async def rps(ctx, message=None):
     if message == None:
         await ctx.send(embed=discord.Embed(title="Invalid move", description="``Please specify a choice.``", color=discord.Color.red()))
+        await ctx.send(embed=discord.Embed(title="Invalid move", description="``Please specify a choice.``", color=discord.Color.red()))
         return  
     else:
         await game.game(ctx, message)
@@ -70,12 +77,20 @@ async def blackjacks(ctx, bet: int=0, client=client):
 @client.command(name='bal', help="Check your Blackjack balance")
 async def balance(ctx):
     await bal.balance(ctx)
+    await bal.balance(ctx)
 
 @client.command(name='leaderboard', help="Check the Blackjack leaderboard")
 async def leaderboardy(ctx, client=client):
     await leaderboard.leaderboard(ctx, client)
+async def leaderboardy(ctx, client=client):
+    await leaderboard.leaderboard(ctx, client)
 
 
+@client.command(name="daily", help="Get 1000 chips once per day")
+async def once_per_day(ctx):
+    await free_chips.once_per_day(ctx)
+
+@client.command(name="weekly", help="Get 5000 chips once per week")
 @client.command(name="daily", help="Get 1000 chips once per day")
 async def once_per_day(ctx):
     await free_chips.once_per_day(ctx)
@@ -91,7 +106,19 @@ async def coins(ctx, amount: int=None):
 @client.command(name="chips", help="Exchange your Larry coins for chips")
 async def chips(ctx, amount: int=None):
     await exchange_chips.chips(ctx, amount)
+    await free_chips.once_per_week(ctx)
 
+@client.command(name="coins", help="Exchange your chips for Larry coins")
+async def coins(ctx, amount: int=None):
+    await exchange_coins.coins(ctx, amount)
+
+@client.command(name="chips", help="Exchange your Larry coins for chips")
+async def chips(ctx, amount: int=None):
+    await exchange_chips.chips(ctx, amount)
+
+@client.command(name="shop", help="Use Larry coins to buy items")
+async def shops(ctx, client=client):
+    await shop.shopy(ctx, client)
 @client.command(name="shop", help="Use Larry coins to buy items")
 async def shops(ctx, client=client):
     await shop.shopy(ctx, client)
