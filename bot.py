@@ -7,7 +7,6 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 from commands.responses import send_responses
-from googleapiclient.discovery import build
 
 intents = discord.Intents.all()
 intents.members = True
