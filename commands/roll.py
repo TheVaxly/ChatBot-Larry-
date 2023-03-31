@@ -1,4 +1,5 @@
 import random
+import discord
 
 dice_history = []
 
@@ -17,12 +18,12 @@ async def roll_command(ctx, *, dice: str = ''):
         try:
             rolls, limit = map(int, dice.split('d'))
         except Exception:
-            await ctx.send('``Invalid dice format or command.``')
+            await ctx.send(embed=discord.Embed(title='Invalid dice format.', description='Please use the format: ``<number of dice>``d``<number of sides>``', color=discord.Color.red()))
             return
 
         result = sum(random.randint(1, limit) for _ in range(rolls))
         dice_history[-2:] = [rolls, limit]
 
-        await ctx.send(f'{symbol}{result}{symbol}')
+        await ctx.send(embed=discord.Embed(title=f'```{symbol}{result}{symbol}```', color=discord.Color.gold()))
         print(f'{ctx.author.name} rolled {result}')
         print(f'Dice history: {dice_history}')

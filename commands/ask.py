@@ -1,4 +1,5 @@
 import commands.responses as responses
+import discord
 
 symbol = "```"
 
@@ -11,6 +12,6 @@ async def ask_command(ctx, *, user_input):
 
         await ctx.send(symbol + bot_response + symbol)
     except Exception:
-        await ctx.send("``There was an error``")
+        await ctx.send(embed=discord.Embed(title="error", color=discord.Color.red()))
         return
     print(f'{user_name} asked: {user_input} in #{channel}')

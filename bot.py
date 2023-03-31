@@ -1,15 +1,13 @@
 from discord.ext import commands
 import discord
-import commands.roll as roll, commands.reddit as reddit, commands.ask as ask, commands.game as game
-import asyncio
+import commands.roll as roll, commands.reddit as reddit, commands.ask as ask, commands.game as game, commands.bal as bal, commands.free_chips as free_chips
+import commands.exchange_chips as exchange_chips, commands.exchange_coins as exchange_coins, commands.shop as shop, commands.leaderboard as leaderboard, commands.blackjack as blackjack
+import commands.clearall as clearll
 import os
 from dotenv import load_dotenv
 load_dotenv()
 from commands.responses import send_responses
 from googleapiclient.discovery import build
-import random
-import sqlite3
-import datetime
 
 intents = discord.Intents.all()
 intents.members = True
@@ -30,35 +28,16 @@ async def ask_command(ctx, *, user_input="Tell me a joke"):
 async def roll_command(ctx, *, dice: str = ''):
     await roll.roll_command(ctx, dice=dice)
 
-
-@client.command(name='command')
-async def help_command(ctx):
-    await ctx.send('```Commands:\n!ask [question]\n!roll [xdy]\n!clearbot [amount]\n!clearuser [user] [amount]\n!help```')
-
 @client.command(name="clearall", help="Delete all messages in a channel (Admin only)")
 @commands.has_role('Owner')
-async def clear_all(ctx):
-    try:
-        warning_msg = await ctx.send("Are you sure you want to delete all messages in this channel? This action cannot be undone. Type ``!yes`` to confirm.")
-        try:
-            async def check(m):
-                return m.author == ctx.author and m.channel == ctx.channel and m.content.lower() == "!yes"
-            await client.wait_for('message', check=check, timeout=30)
-        except asyncio.TimeoutError:
-            await warning_msg.delete()
-            await ctx.send("Command canceled. You did not confirm within 30 seconds.")
-            return
-        else:
-            await warning_msg.delete()
-        await ctx.channel.purge(limit=None)
-        await ctx.send(f"``All messages have been deleted.``")
-
-        print(f"{ctx.author.name} deleted all messages.")
-    except Exception:
-        await ctx.send("``Premission denied.``")
+async def clear_alls(ctx, client=client):
+    await clearll.clear_all(ctx, client=client)
 
 @client.command(name='reddit', help="Get a random post from a subreddit")
-async def meme(ctx, message):
+async def meme(ctx, message=None):
+    if message is None:
+        await ctx.send(embed=discord.Embed(title="Invalid", description="``Please provide a subreddit.``", color=discord.Color.red()))
+        return
     await reddit.meme(ctx, message)
 
 @client.command(name='subs', help="Get the subscriber count of a channel (Probs doesn't work)")
@@ -91,155 +70,43 @@ async def larry(int: discord.Interaction, question: str):
 @client.command(name='rps', help="Play rock paper scissors")
 async def rps(ctx, message=None):
     if message == None:
-        await ctx.send("``Please enter a valid move.``")
+        await ctx.send(embed=discord.Embed(title="Invalid move", description="``Please specify a choice.``", color=discord.Color.red()))
         return  
     else:
         await game.game(ctx, message)
 
+# command to play blackjack with individual user balances
 @client.command(name='blackjack', help="Play blackjack")
-async def blackjack(ctx, bet: int):
-    bets = bet * 1.5 + bet
-    bets = int(bets)
-    bets2 = bet + bet
-    chips = []
-    chips.append(bet)
-    # check if the player has enough money to place the bet
-    if bet > 0 and bet <= 100:
-        # create a deck of cards
-        suits = ["Hearts", "Diamonds", "Spades", "Clubs"]
-        ranks = ["Ace", "2", "3", "4", "5", "6", "7", "8", "9", "10", "Jack", "Queen", "King"]
-        deck = [(rank, suit) for suit in suits for rank in ranks]
-        random.shuffle(deck)
-
-            # deal the cards
-            player_hand = [deck.pop(), deck.pop()]
-            dealer_hand = [deck.pop(), deck.pop()]
-
-            # calculate the value of the hands
-            player_value = calculate_hand(player_hand)
-            dealer_value = calculate_hand(dealer_hand)
-
-        # let the player take their turn
-        while True:
-            # show the player's hand and ask for their move
-            await ctx.send(f"``Your hand: {', '.join(card[0] + ' of ' + card[1] for card in player_hand)}``")
-            await ctx.send(f"``Dealer's hand: {dealer_hand[0][0]} of {dealer_hand[0][1]}, HIDDEN CARD``")
-            move = await client.wait_for('message', check=lambda m: m.author == ctx.author)
-
-            # handle the player's move
-            if move.content.lower() == "!hit":
-                # draw a card and add it to the player's hand
-                player_hand.append(deck.pop())
-                player_value = calculate_hand(player_hand)
-
-                # check if the player busted
-                if player_value > 21:
-                    await ctx.send(f"``You busted! Your hand is worth {player_value}. You lost {bet} chips.``")
-
-                    break
-            elif move.content.lower() == "!stand":
-                # the player is done taking their turn
-                break
-
-        # let the dealer take their turn
-        if player_value <= 21:
-            await ctx.send(f"``The dealer's HIDDEN CARD was {dealer_hand[1][0]} of {dealer_hand[1][1]}``")
-            while dealer_value < 17:
-                # draw a card and add it to the dealer's hand
-                dealer_hand.append(deck.pop())
-                dealer_value = calculate_hand(dealer_hand)
-
-            # show the final hands
-            await ctx.send(f"``Your hand: {', '.join(card[0] + ' of ' + card[1] for card in player_hand)}``")
-            await ctx.send(f"``Dealer's hand: {', '.join(card[0] + ' of ' + card[1] for card in dealer_hand)}``")
-
-            # determine the winner
-            if dealer_value > 21:
-                await ctx.send(f"``The dealer busted! You win {bets2} chips!``")
-            elif dealer_value == player_value:
-                await ctx.send(f"``It's a tie! You get {bet} chips back.``")
-            elif dealer_value > player_value:
-                await ctx.send("``The dealer wins!``")
-            elif dealer_value < player_value and player_value == 21:
-                await ctx.send(f"``BLACKJACK! You win {bets} chips!``")
-    else:
-        await ctx.send("``Invalid bet. Please bet between 1 and 100 chips.``")
-
-def calculate_hand(hand):
-    # calculate the value of a hand
-    values = {
-        "Ace": 11,
-        "2": 2,
-        "3": 3,
-        "4": 4,
-        "5": 5,
-        "6": 6,
-        "7": 7,
-        "8": 8,
-        "9": 9,
-        "10": 10,
-        "Jack": 10,
-        "Queen": 10,
-        "King": 10
-        }
-    num_aces = sum(card[0] == "Ace" for card in hand)
-    value = sum(values[card[0]] for card in hand)
-    while num_aces > 0 and value > 21:
-        value -= 10
-        num_aces -= 1
-    return value
+async def blackjacks(ctx, bet: int=0, client=client):
+    await blackjack.blackjack(ctx, bet, client)
 
 @client.command(name='bal', help="Check your Blackjack balance")
 async def balance(ctx):
-    player = ctx.author
-    balance = get_balance(player.id)
-    await ctx.send(f"``You have {balance} chips.``")
+    await bal.balance(ctx)
 
 @client.command(name='leaderboard', help="Check the Blackjack leaderboard")
-async def leaderboard(ctx):  
-    # Get the balances from the database
-    cursor = conn_balances.execute('SELECT user_id, balance FROM balances ORDER BY balance DESC')
-    rows = cursor.fetchall()
-
-    # Format the leaderboard
-    leaderboard = ''
-    for i in range(len(rows)):
-        user = client.get_user(rows[i][0])
-        leaderboard += f"{i+1}. {user.name} - {rows[i][1]} chips "
-
-    await ctx.send(f"``{leaderboard}``")
-    
-# Connect to the balances and last_used databases
-conn_balances = sqlite3.connect('balances.db')
-conn_last_used = sqlite3.connect('last_used.db')
-
-# Create the balances table if it doesn't exist
-conn_balances.execute('CREATE TABLE IF NOT EXISTS balances (user_id INTEGER PRIMARY KEY, balance INTEGER NOT NULL DEFAULT 0)')
-
-# Create the last_used table if it doesn't exist
-conn_last_used.execute('CREATE TABLE IF NOT EXISTS last_used (user_id INTEGER PRIMARY KEY, last_used TEXT)')
+async def leaderboardy(ctx, client=client):
+    await leaderboard.leaderboard(ctx, client)
 
 
-@client.command(name="daily", help="Get 100 chips once per day")
+@client.command(name="daily", help="Get 1000 chips once per day")
 async def once_per_day(ctx):
-    # Check if user has already used the command today
-    cursor = conn_last_used.execute('SELECT last_used FROM last_used WHERE user_id=?', (ctx.author.id,))
-    row = cursor.fetchone()
-    if row is not None:
-        last_used = datetime.datetime.strptime(row[0], '%Y-%m-%d %H:%M:%S.%f')
-        if datetime.datetime.now() - last_used < datetime.timedelta(days=1):
-            # User has already used the command today, so send an error message
-            await ctx.send("``Sorry, you've already used this command today.``")
-            return
+    await free_chips.once_per_day(ctx)
 
-    # User hasn't used the command today, so execute the command and update the last used time
-    await ctx.send("``You got 100 chips!``")
-    cursor = conn_balances.execute('SELECT balance FROM balances WHERE user_id=?', (ctx.author.id,))
-    row = cursor.fetchone()
-    balance = row[0] + 100
-    conn_balances.execute('UPDATE balances SET balance=? WHERE user_id=?', (balance, ctx.author.id))
-    conn_balances.commit()
-    conn_last_used.execute('REPLACE INTO last_used VALUES (?, ?)', (ctx.author.id, datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S.%f')))
-    conn_last_used.commit()
+@client.command(name="weekly", help="Get 5000 chips once per week")
+async def once_per_day(ctx):
+    await free_chips.once_per_week(ctx)
+
+@client.command(name="coins", help="Exchange your chips for Larry coins")
+async def coins(ctx, amount: int=None):
+    await exchange_coins.coins(ctx, amount)
+
+@client.command(name="chips", help="Exchange your Larry coins for chips")
+async def chips(ctx, amount: int=None):
+    await exchange_chips.chips(ctx, amount)
+
+@client.command(name="shop", help="Use Larry coins to buy items")
+async def shops(ctx, client=client):
+    await shop.shopy(ctx, client)
 
 client.run(os.getenv('token'))
