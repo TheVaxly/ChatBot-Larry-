@@ -7,72 +7,11 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 from commands.responses import send_responses
-import chess
-import chess.engine
 
 intents = discord.Intents.all()
 intents.members = True
 
 client = commands.Bot(command_prefix='!', intents=intents)
-
-engine = chess.engine.SimpleEngine.popen_uci("stockfish.exe")
-
-async def send_board(ctx, board):
-    img = chess.svg.board(board)
-    img = img.replace("#FFFFFF", "#FFCE9E").replace("#D18B47", "#AA5500")
-    with open("board.svg", "w", encoding="utf-8") as f:
-        f.write(img)
-    with open("board.svg", "rb") as f:
-        picture = discord.File(f)
-        await ctx.send(file=picture)
-
-@client.command(name='chess', help='Play chess against the bot')
-async def chess(ctx, color='w', time_limit=5):
-    if color == 'w':
-        human_color = chess.WHITE
-    elif color == 'b':
-        human_color = chess.BLACK
-    else:
-        await ctx.send('Invalid color choice. Please choose "w" for white or "b" for black.')
-        return
-    
-    board = chess.Board()
-    await send_board(ctx, board)
-    while not board.is_game_over():
-        if board.turn == human_color:
-            await ctx.send(f'Your move ({color}):')
-            def check_move(m):
-                try:
-                    board.push_san(m.content)
-                    return True
-                except ValueError:
-                    return False
-            move = await client.wait_for('message', check=check_move, timeout=time_limit*60)
-            board.push_san(move.content)
-        else:
-            result = engine.play(board, chess.engine.Limit(time=time_limit))
-            board.push(result.move)
-            await ctx.send(f'The bot played {result.move.uci()}')
-        await send_board(ctx, board)
-        
-    result = board.result()
-    if result == "1-0":
-        winner = 'White'
-    elif result == "0-1":
-        winner = 'Black'
-    else:
-        winner = 'No one (draw)'
-    await ctx.send(f'{winner} wins!')
-    
-    # Offer to save the game in PGN format
-    def check_save(m):
-        return m.content.lower() in ['y', 'n']
-    await ctx.send('Would you like to save the game in PGN format? (y/n)')
-    save_response = await client.wait_for('message', check=check_save)
-    if save_response.content.lower() == 'y':
-        game_name = f'chess-{ctx.message.created_at.strftime("%Y%m%d-%H%M%S")}.pgn'
-        with open(game_name, 'w') as f:
-            f.write(board.board_fen())
 
 @client.event
 async def on_ready():
