@@ -150,7 +150,7 @@ async def blackjack(ctx, bet: int=0, client=None):
                     elif move.content.lower() == "!surrender" and move.channel == thread:
                         # surrender the game and lose half the bet
                         await thread.send(embed=discord.Embed(title="Surrender", description=f"You surrendered the game and lost half your bet.", color=0xff0000))
-                        update_balance(player.id, -bet / 2)
+                        update_balance(player.id, bet / 2)
                         await asyncio.sleep(10)
                         await thread.delete()
                         break
