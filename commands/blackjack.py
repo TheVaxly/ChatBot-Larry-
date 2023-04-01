@@ -4,8 +4,7 @@ import sqlite3
 import asyncio
 
 conn = sqlite3.connect('db/balances.db')
-
-
+used_hits = False
 # Create the balances table if it doesn't exist
 conn.execute('CREATE TABLE IF NOT EXISTS balances (user_id INTEGER PRIMARY KEY, balance INTEGER NOT NULL DEFAULT 0)')
 
@@ -107,6 +106,7 @@ async def blackjack(ctx, bet: int=0, client=None):
                     if move.author != ctx.author:
                         ctx.send(embed=discord.Embed(title="Invalid move", description=f"You can't make a move in someone else's game.", color=0xff0000))
                         continue
+
                     # handle the player's move
                     if move.content.lower() == "!hit" and move.channel == thread:
                         # draw a card and add it to the player's hand
@@ -117,6 +117,27 @@ async def blackjack(ctx, bet: int=0, client=None):
                         hit.add_field(name="Your Hand", value=f"{', '.join(card[0] + ' of ' + card[1] for card in player_hand)} = {player_value}", inline=False)
                         hit.add_field(name="Dealer's Hand", value=f"{dealer_hand[0][0]} of {dealer_hand[0][1]}, HIDDEN CARD", inline=False)
                         await thread.send(embed=hit)
+                        # check if the player has busted
+                        if player_value > 21:
+                            await thread.send(embed=discord.Embed(title="Bust", description=f"You busted with a hand value of {player_value}.", color=0xff0000))
+                            update_balance(player.id, -bet)
+                            await asyncio.sleep(10)
+                            await thread.delete()
+                            break
+
+                    elif move.content.lower() == "!double" and move.channel == thread:
+                        # double the bet and draw a card
+                        if get_balance(player.id) < bet * 2:
+                            await thread.send(embed=discord.Embed(title="Insufficient funds", description=f"You don't have enough money to double your bet.", color=0xff0000))
+                            continue
+                        player_hand.append(deck.pop())
+                        player_value = calculate_hand(player_hand)
+                        double = discord.Embed(title="Double", color=0xff0000)
+                        double.add_field(name="Player", value=f"{player.name}", inline=True)
+                        double.add_field(name="Bet", value=f"{bet}", inline=True)
+                        double.add_field(name="Your Hand", value=f"{', '.join(card[0] + ' of ' + card[1] for card in player_hand)} = {player_value}", inline=False)
+                        double.add_field(name="Dealer's Hand", value=f"{dealer_hand[0][0]} of {dealer_hand[0][1]}, HIDDEN CARD", inline=False)
+                        await thread.send(embed=double)
 
                         # check if the player busted
                         if player_value > 21:
@@ -125,6 +146,15 @@ async def blackjack(ctx, bet: int=0, client=None):
                             await asyncio.sleep(10)
                             await thread.delete()
                             break
+                    
+                    elif move.content.lower() == "!surrender" and move.channel == thread:
+                        # surrender the game and lose half the bet
+                        await thread.send(embed=discord.Embed(title="Surrender", description=f"You surrendered the game and lost half your bet.", color=0xff0000))
+                        update_balance(player.id, -bet / 2)
+                        await asyncio.sleep(10)
+                        await thread.delete()
+                        break
+
                     elif move.content.lower() == "!stand" and move.channel == thread:
                         # the player is done taking their turn
                         break
