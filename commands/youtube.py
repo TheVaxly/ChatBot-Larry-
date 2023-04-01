@@ -1,10 +1,10 @@
 import os
-import discord
 from dotenv import load_dotenv
 load_dotenv()
 from googleapiclient.discovery import build
+import discord
 
-async def subscribers(ctx, *, user_input):
+async def subscribers(ctx, user_input):
     try:    
         api_service_name = "youtube"
         api_version = "v3"
@@ -15,5 +15,5 @@ async def subscribers(ctx, *, user_input):
         subscirbers = response["items"][0]["statistics"]["subscriberCount"]
         await ctx.send(embed=discord.Embed(title=f"{user_input} has {subscirbers} subscribers", color=discord.Color.green()))
     except Exception:
-        await ctx.send(embed=discord.Embed(title="Subscriber count not available", description="Try other channel", color=discord.Color.red()))
+        await ctx.send(embed=discord.Embed(title="Couldn't find subscriber count", description="Try other some channel", color=discord.Color.red()))
         return

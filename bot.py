@@ -1,13 +1,12 @@
 from discord.ext import commands
 import discord
 import commands.roll as roll, commands.reddit as reddit, commands.ask as ask, commands.game as game, commands.bal as bal, commands.free_chips as free_chips
-import commands.exchange_chips as exchange_chips, commands.exchange_coins as exchange_coins, commands.shop as shop, commands.leaderboard as leaderboard, commands.blackjack as blackjacks
+import commands.exchange_chips as exchange_chips, commands.exchange_coins as exchange_coins, commands.shop as shop, commands.leaderboard as leaderboard, commands.blackjack as blackjack
 import commands.clearall as clearll, commands.youtube as youtube
 import os
 from dotenv import load_dotenv
 load_dotenv()
 from commands.responses import send_responses
-from googleapiclient.discovery import build
 
 intents = discord.Intents.all()
 intents.members = True
@@ -41,8 +40,8 @@ async def meme(ctx, message=None):
     await reddit.meme(ctx, message)
 
 @client.command(name='subs', help="Get the subscriber count of a channel (Probs doesn't work)")
-async def subscriber(ctx, *, user_input):
-    await youtube.subscribers(ctx, user_input=user_input)
+async def subscribersy(ctx, user_input):
+    await youtube.subscribers(ctx, user_input)
 
 @client.tree.command(name='larry', description="Ask bot yes very many uwu")
 @discord.app_commands.describe(question='What do you want to ask the bot? uwu')
@@ -63,9 +62,10 @@ async def rps(ctx, message=None):
     else:
         await game.game(ctx, message)
 
+# command to play blackjack with individual user balances
 @client.command(name='blackjack', help="Play blackjack")
-async def blackjacky(ctx, bet: int, client=client):
-    await blackjacks.blackjack(ctx, bet, client)
+async def blackjacks(ctx, bet: int=0, client=client):
+    await blackjack.blackjack(ctx, bet, client)
 
 @client.command(name='bal', help="Check your Blackjack balance")
 async def balance(ctx):
