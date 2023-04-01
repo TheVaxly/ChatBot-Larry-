@@ -8,13 +8,7 @@ conn_last_week = sqlite3.connect('db/last_week.db')
 conn_coin = sqlite3.connect('db/coin.db')
 
 # Create the balances table if it doesn't exist
-conn.execute('CREATE TABLE IF NOT EXISTS balances (user_id INTEGER PRIMARY KEY, balance INTEGER NOT NULL DEFAULT 0)')
-
-# Create the last_used table if it doesn't exist
-conn_last_used.execute('CREATE TABLE IF NOT EXISTS last_used (user_id INTEGER PRIMARY KEY, last_used TEXT)')
-
-# Create the last_week table if it doesn't exist
-conn_last_week.execute('CREATE TABLE IF NOT EXISTS last_week (user_id INTEGER PRIMARY KEY, last_week TEXT)')
+conn.execute('CREATE TABLE IF NOT EXISTS balances (user_id INTEGER PRIMARY KEY, balance INTEGER NOT NULL DEFAULT 1000)')
 
 conn_coin.execute('''CREATE TABLE IF NOT EXISTS coin
                 (user_id INT PRIMARY KEY NOT NULL, balance INT NOT NULL)''')
@@ -64,4 +58,4 @@ async def coins(ctx, amount: int=None):
     conn.commit()
     conn_coin.execute('UPDATE coin SET balance=? WHERE user_id=?', (coinss, ctx.author.id))
     conn_coin.commit()
-    await ctx.send(embed=discord.Embed(title=f"You exchanged {amount} chips for {coins} coins.", color=0xff0000))
+    await ctx.send(embed=discord.Embed(title=f"You exchanged {amount} chips for {coins} coins.", color=discord.Color.green()))

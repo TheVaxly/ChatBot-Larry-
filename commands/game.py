@@ -2,6 +2,9 @@ import random
 import discord
 
 async def game(ctx, message):
+    if message == None:
+        await ctx.send(embed=discord.Embed(title="Invalid move", description="``Please specify a choice.``", color=discord.Color.red()))
+        return
     options = ["rock", "paper", "scissors"]
     computer_choice = random.choice(options)
     result = f"You chose {message} and the Larry chose {computer_choice}."
