@@ -7,11 +7,68 @@ import os
 from dotenv import load_dotenv
 load_dotenv()
 from commands.responses import send_responses
+import chess
+import chess.engine
 
 intents = discord.Intents.all()
 intents.members = True
 
 client = commands.Bot(command_prefix='!', intents=intents)
+
+engine = chess.engine.SimpleEngine.popen_uci("path/to/engine")
+board = chess.Board()
+
+async def upload_emojis(guild):
+    with open("board.png", "rb") as f:
+        await guild.create_custom_emoji(name="board", image=f.read())
+    with open("pieces/white_king.png", "rb") as f:
+        await guild.create_custom_emoji(name=":white_king:", image=f.read())
+    with open("pieces/black_king.png", "rb") as f:
+        await guild.create_custom_emoji(name=":black_king:", image=f.read())
+    with open("pieces/white_queen.png", "rb") as f:
+        await guild.create_custom_emoji(name=":white_queen:", image=f.read())
+    with open("pieces/black_queen.png", "rb") as f:
+        await guild.create_custom_emoji(name=":black_queen:", image=f.read())
+    with open("pieces/white_rook.png", "rb") as f:
+        await guild.create_custom_emoji(name=":white_rook:", image=f.read())
+    with open("pieces/black_rook.png", "rb") as f:
+        await guild.create_custom_emoji(name=":black_rook:", image=f.read())
+    with open("pieces/white_bishop.png", "rb") as f:
+        await guild.create_custom_emoji(name=":white_bishop:", image=f.read())
+    with open("pieces/black_bishop.png", "rb") as f:
+        await guild.create_custom_emoji(name=":black_bishop:", image=f.read())
+    with open("pieces/white_knight.png", "rb") as f:
+        await guild.create_custom_emoji(name=":white_knight:", image=f.read())
+    with open("pieces/black_knight.png", "rb") as f:
+        await guild.create_custom_emoji(name=":black_knight:", image=f.read())
+
+@client.event
+async def on_message(message):
+    global board, engine
+    if message.author == client.user:
+        return
+    if message.content.startswith('!move'):
+        if board.turn == chess.WHITE:
+            try:
+                move = message.content.split()[1]
+                board.push_uci(move)
+                result = engine.play(board, chess.engine.Limit(time=2.0))
+                board.push(result.move)
+                fen = board.fen()
+                # Update the board image with the new position
+                # Use the custom emojis for each chess piece to display the position
+                board_image = f":board:\n:white_king::{fen.split()[0].replace('/', '::')}::black_king:\n:board:"
+                await message.channel.send(board_image)
+            except:
+                await message.channel.send("Invalid move or something went wrong!")
+        else:
+            await message.channel.send("It's not your turn!")
+    elif message.content == '!board':
+        fen = board.fen()
+        # Display the current board position using the custom emojis
+        board_image = f":board:\n:white_king::{fen.split()[0].replace('/', '::')}::black_king:\n:board:"
+        await message.channel.send(board_image)
+
 
 @client.event
 async def on_ready():
