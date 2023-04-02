@@ -2,7 +2,7 @@ from discord.ext import commands
 import discord
 import commands.roll as roll, commands.reddit as reddit, commands.ask as ask, commands.game as game, commands.bal as bal, commands.free_chips as free_chips
 import commands.exchange_chips as exchange_chips, commands.exchange_coins as exchange_coins, commands.shop as shop, commands.leaderboard as leaderboard, commands.blackjack as blackjack
-import commands.clearall as clearll, commands.youtube as youtube
+import commands.clearall as clearll, commands.youtube as youtube, commands.addchips as addchips, commands.addcoins as addcoins
 import os
 from dotenv import load_dotenv
 load_dotenv()
@@ -56,11 +56,7 @@ async def larry(int: discord.Interaction, question: str):
 
 @client.command(name='rps', help="Play rock paper scissors")
 async def rps(ctx, message=None):
-    if message == None:
-        await ctx.send(embed=discord.Embed(title="Invalid move", description="``Please specify a choice.``", color=discord.Color.red()))
-        return  
-    else:
-        await game.game(ctx, message)
+    await game.game(ctx, message)
 
 # command to play blackjack with individual user balances
 @client.command(name='blackjack', help="Play blackjack")
@@ -94,5 +90,15 @@ async def chips(ctx, amount: int=None):
 @client.command(name="shop", help="Use Larry coins to buy items")
 async def shops(ctx, client=client):
     await shop.shopy(ctx, client)
+
+@client.command(name="addchips", help="Add chips to a user (Admin only)")
+@commands.has_role('Owner')
+async def add_chipsy(ctx, amount: int=None):
+    await addchips.add_chips(ctx, amount)
+
+@client.command(name="addcoins", help="Add coins to a user (Admin only)")
+@commands.has_role('Owner')
+async def add_coinsy(ctx, amount: int=None):
+    await addcoins.add_coins(ctx, amount)
 
 client.run(os.getenv('token'))
