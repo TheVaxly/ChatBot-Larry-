@@ -4,7 +4,7 @@ import sqlite3
 import asyncio
 
 conn = sqlite3.connect('db/balances.db')
-used_hits = False
+
 # Create the balances table if it doesn't exist
 conn.execute('CREATE TABLE IF NOT EXISTS balances (user_id INTEGER PRIMARY KEY, balance INTEGER NOT NULL DEFAULT 0)')
 
@@ -62,6 +62,7 @@ async def blackjack(ctx, bet: int=0, client=None):
 
             # calculate the amount to be paid out for a blackjack
         blackjack_payout = int(bet * 1.5)
+        
             # check if the player has enough money to place the bet
         if bet > 0 and bet <= current_balance[0]:
                 # create a deck of cards
@@ -120,7 +121,6 @@ async def blackjack(ctx, bet: int=0, client=None):
                         # check if the player has busted
                         if player_value > 21:
                             await thread.send(embed=discord.Embed(title="Bust", description=f"You busted with a hand value of {player_value}.", color=0xff0000))
-                            update_balance(player.id, -bet)
                             await asyncio.sleep(10)
                             await thread.delete()
                             break
@@ -130,11 +130,14 @@ async def blackjack(ctx, bet: int=0, client=None):
                         if get_balance(player.id) < bet * 2:
                             await thread.send(embed=discord.Embed(title="Insufficient funds", description=f"You don't have enough money to double your bet.", color=0xff0000))
                             continue
+                        if len(player_hand) > 2:
+                            await thread.send(embed=discord.Embed(title="Invalid move", description=f"You can't double after you've already hit.", color=0xff0000))
+                            continue
                         player_hand.append(deck.pop())
                         player_value = calculate_hand(player_hand)
                         double = discord.Embed(title="Double", color=0xff0000)
                         double.add_field(name="Player", value=f"{player.name}", inline=True)
-                        double.add_field(name="Bet", value=f"{bet}", inline=True)
+                        double.add_field(name="Bet", value=f"{bet*2}", inline=True)
                         double.add_field(name="Your Hand", value=f"{', '.join(card[0] + ' of ' + card[1] for card in player_hand)} = {player_value}", inline=False)
                         double.add_field(name="Dealer's Hand", value=f"{dealer_hand[0][0]} of {dealer_hand[0][1]}, HIDDEN CARD", inline=False)
                         await thread.send(embed=double)
@@ -155,6 +158,25 @@ async def blackjack(ctx, bet: int=0, client=None):
                         await thread.delete()
                         break
 
+                    elif move.content.lower() == "!split" and move.channel == thread:
+                        # split the hand into two hands
+                        if len(player_hand) > 2:
+                            await thread.send(embed=discord.Embed(title="Invalid move", description=f"You can't split after you've already hit.", color=0xff0000))
+                            continue
+                        if player_hand[0][0] != player_hand[1][0]:
+                            await thread.send(embed=discord.Embed(title="Invalid move", description=f"You can only split if you have two cards of the same value.", color=0xff0000))
+                            continue
+                        if get_balance(player.id) < bet:
+                            await thread.send(embed=discord.Embed(title="Insufficient funds", description=f"You don't have enough money to split your hand.", color=0xff0000))
+                            continue
+                        split = discord.Embed(title="Split", color=0xff0000)
+                        split.add_field(name="Player", value=f"{player.name}", inline=True)
+                        split.add_field(name="Bet", value=f"{bet}", inline=True)
+                        split.add_field(name="Hand 1", value=f"{player_hand[0][0]} of {player_hand[0][1]}", inline=False)
+                        split.add_field(name="Hand 2", value=f"{player_hand[1][0]} of {player_hand[1][1]}", inline=False)
+                        split.add_field(name="Dealer's Hand", value=f"{dealer_hand[0][0]} of {dealer_hand[0][1]}, HIDDEN CARD", inline=False)
+                        await thread.send(embed=split)
+                        
                     elif move.content.lower() == "!stand" and move.channel == thread:
                         # the player is done taking their turn
                         break
