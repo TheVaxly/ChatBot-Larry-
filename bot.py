@@ -6,6 +6,7 @@ import commands.clearall as clearll, commands.youtube as youtube, commands.addch
 import os
 from dotenv import load_dotenv
 load_dotenv()
+import sqlite3
 from commands.responses import send_responses
 
 intents = discord.Intents.all()
@@ -57,7 +58,7 @@ async def larry(int: discord.Interaction, question: str):
 @client.command(name='rps', help="Play rock paper scissors")
 async def rps(ctx, message=None):
     await game.game(ctx, message)
-
+    
 # command to play blackjack with individual user balances
 @client.command(name='blackjack', help="Play blackjack")
 async def blackjacks(ctx, bet: int=0, client=client):

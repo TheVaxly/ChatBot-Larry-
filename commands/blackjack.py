@@ -4,7 +4,7 @@ import sqlite3
 import asyncio
 
 conn = sqlite3.connect('db/balances.db')
-used_hits = False
+
 # Create the balances table if it doesn't exist
 conn.execute('CREATE TABLE IF NOT EXISTS balances (user_id INTEGER PRIMARY KEY, balance INTEGER NOT NULL DEFAULT 0)')
 
@@ -28,6 +28,7 @@ def update_balance(user_id, amount):
     conn.commit()
 
 async def blackjack(ctx, bet: int=0, client=None):
+    used_double = False
     current_balance = []
     balance = get_balance(ctx.author.id)
     current_balance.append(balance)
@@ -62,6 +63,7 @@ async def blackjack(ctx, bet: int=0, client=None):
 
             # calculate the amount to be paid out for a blackjack
         blackjack_payout = int(bet * 1.5)
+        
             # check if the player has enough money to place the bet
         if bet > 0 and bet <= current_balance[0]:
                 # create a deck of cards
@@ -106,7 +108,67 @@ async def blackjack(ctx, bet: int=0, client=None):
                     if move.author != ctx.author:
                         ctx.send(embed=discord.Embed(title="Invalid move", description=f"You can't make a move in someone else's game.", color=0xff0000))
                         continue
+                    
+                    if move.content.lower() == "!double" and move.channel == thread:
+                        # double the bet and draw a card
+                        if get_balance(player.id) < bet * 2:
+                            await thread.send(embed=discord.Embed(title="Insufficient funds", description=f"You don't have enough money to double your bet.", color=0xff0000))
+                            continue
+                        if len(player_hand) > 2:
+                            await thread.send(embed=discord.Embed(title="Invalid move", description=f"You can't double after you've already hit.", color=0xff0000))
+                            continue
+                        player_hand.append(deck.pop())
+                        player_value = calculate_hand(player_hand)
+                        double = discord.Embed(title="Double", color=0xff0000)
+                        double.add_field(name="Player", value=f"{player.name}", inline=True)
+                        double.add_field(name="Bet", value=f"{bet*2}", inline=True)
+                        double.add_field(name="Your Hand", value=f"{', '.join(card[0] + ' of ' + card[1] for card in player_hand)} = {player_value}", inline=False)
+                        double.add_field(name="Dealer's Hand", value=f"{dealer_hand[0][0]} of {dealer_hand[0][1]}, HIDDEN CARD", inline=False)
+                        await thread.send(embed=double)
 
+                        # check if the player busted
+                        if player_value > 21:
+                            await thread.send(embed=discord.Embed(title="Bust", description=f"You busted with a hand value of {player_value}.", color=0xff0000))
+                            update_balance(player.id, -bet)
+                            await asyncio.sleep(10)
+                            await thread.delete()
+                            break
+                        else:
+                            await thread.send(embed=discord.Embed(title="Hidden card", description=f"The dealer's hidden card was {dealer_hand[1][0]} of {dealer_hand[1][1]}.", color=0xff0000))
+                            while dealer_value <= 20 and dealer_value <= player_value:
+                                # draw a card and add it to the dealer's hand
+                                dealer_hand.append(deck.pop())
+                                dealer_value = calculate_hand(dealer_hand)
+
+                            # show the final hands
+                            final = discord.Embed(title="Final hand", color=0xff0000)
+                            final.add_field(name="Your Hand", value=f"{', '.join(card[0] + ' of ' + card[1] for card in player_hand)} = {player_value}", inline=False)
+                            final.add_field(name="Dealer's Hand", value=f"{', '.join(card[0] + ' of ' + card[1] for card in dealer_hand)} = {dealer_value}", inline=False)
+                            await thread.send(embed=final)
+
+                            # determine the winner
+                            if dealer_value > 21:
+                                dealer_bust = discord.Embed(title="Dealer bust", description=f"The dealer busted with a hand value of {dealer_value}.", color=0xff0000)
+                                dealer_bust.add_field(name="Bet", value=f"You won {bet*2} chips.", inline=False)
+                                await thread.send(embed=dealer_bust)
+                                update_balance(player.id, 3*bet)
+                            elif dealer_value == player_value:
+                                tie = discord.Embed(title="Tie", description=f"The dealer and you tied with a hand value of {dealer_value}.", color=0xff0000)
+                                tie.add_field(name="Bet", value=f"You got your bet back.", inline=False)
+                                await thread.send(embed=tie)
+                                update_balance(player.id, bet)
+                            elif dealer_value > player_value:
+                                dealer_wins = discord.Embed(title="Dealer wins", description=f"The dealer won with a hand value of {dealer_value}." ,color=0xff0000)
+                                dealer_wins.add_field(name="Bet", value=f"You lost {bet*2} chips.", inline=False)
+                                await thread.send(embed=dealer_wins)
+                            elif dealer_value < player_value and player_value == 21:
+                                blackjack = discord.Embed(title="Blackjack", description=f"You got blackjack!", color=0xff0000)
+                                blackjack.add_field(name="Bet", value=f"You won {1.5*bet*2} chips.", inline=False)
+                                await thread.send(embed=blackjack)
+                                update_balance(player.id, blackjack_payout + bet * 2)
+                            await asyncio.sleep(10)
+                            await thread.delete()
+                            break
                     # handle the player's move
                     if move.content.lower() == "!hit" and move.channel == thread:
                         # draw a card and add it to the player's hand
@@ -120,29 +182,6 @@ async def blackjack(ctx, bet: int=0, client=None):
                         # check if the player has busted
                         if player_value > 21:
                             await thread.send(embed=discord.Embed(title="Bust", description=f"You busted with a hand value of {player_value}.", color=0xff0000))
-                            update_balance(player.id, -bet)
-                            await asyncio.sleep(10)
-                            await thread.delete()
-                            break
-
-                    elif move.content.lower() == "!double" and move.channel == thread:
-                        # double the bet and draw a card
-                        if get_balance(player.id) < bet * 2:
-                            await thread.send(embed=discord.Embed(title="Insufficient funds", description=f"You don't have enough money to double your bet.", color=0xff0000))
-                            continue
-                        player_hand.append(deck.pop())
-                        player_value = calculate_hand(player_hand)
-                        double = discord.Embed(title="Double", color=0xff0000)
-                        double.add_field(name="Player", value=f"{player.name}", inline=True)
-                        double.add_field(name="Bet", value=f"{bet}", inline=True)
-                        double.add_field(name="Your Hand", value=f"{', '.join(card[0] + ' of ' + card[1] for card in player_hand)} = {player_value}", inline=False)
-                        double.add_field(name="Dealer's Hand", value=f"{dealer_hand[0][0]} of {dealer_hand[0][1]}, HIDDEN CARD", inline=False)
-                        await thread.send(embed=double)
-
-                        # check if the player busted
-                        if player_value > 21:
-                            await thread.send(embed=discord.Embed(title="Bust", description=f"You busted with a hand value of {player_value}.", color=0xff0000))
-                            update_balance(player.id, -bet)
                             await asyncio.sleep(10)
                             await thread.delete()
                             break
@@ -154,15 +193,14 @@ async def blackjack(ctx, bet: int=0, client=None):
                         await asyncio.sleep(10)
                         await thread.delete()
                         break
-
+                    
                     elif move.content.lower() == "!stand" and move.channel == thread:
-                        # the player is done taking their turn
                         break
 
                 # let the dealer take their turn
                 if player_value <= 21:
                     await thread.send(embed=discord.Embed(title="Hidden card", description=f"The dealer's hidden card was {dealer_hand[1][0]} of {dealer_hand[1][1]}.", color=0xff0000))
-                    while dealer_value <= 20 and dealer_value < player_value:
+                    while dealer_value <= 20 and dealer_value <= player_value:
                         # draw a card and add it to the dealer's hand
                         dealer_hand.append(deck.pop())
                         dealer_value = calculate_hand(dealer_hand)
