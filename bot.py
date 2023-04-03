@@ -106,7 +106,7 @@ async def add_coinsy(ctx, amount: int=None):
 async def blackjack_help(ctx):
     await ctx.send(embed=discord.Embed(title="Blackjack Help", description="``!blackjack <bet>``\n``!hit``\n``!stand``\n``!double``\n``!split``\n``!surrender``\n``!help blackjack``", color=discord.Color.green()))
 
-@client.command(name="news", help="Get the latest news on Delfi")
+@client.command(name="news", help="Get the latest news on Delfi or Postimees")
 async def newy(ctx, newsq: str=None):
     if newsq is None:
         ran = random.randint(1, 2)
