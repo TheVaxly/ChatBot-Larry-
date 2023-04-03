@@ -109,7 +109,30 @@ async def blackjack(ctx, bet: int=0, client=None):
                         ctx.send(embed=discord.Embed(title="Invalid move", description=f"You can't make a move in someone else's game.", color=0xff0000))
                         continue
                     
-                    if move.content.lower() == "!double" and move.channel == thread:
+                    if move.content.lower() == "split" and move.channel == thread:
+                        # split the hand and draw a card for each
+                        if get_balance(player.id) < bet:
+                            await thread.send(embed=discord.Embed(title="Insufficient funds", description=f"You don't have enough money to split your bet.", color=0xff0000))
+                            continue
+                        if len(player_hand) > 2:
+                            await thread.send(embed=discord.Embed(title="Invalid move", description=f"You can't split after you've already hit.", color=0xff0000))
+                            continue
+                        if player_hand[0][0] != player_hand[1][0]:
+                            await thread.send(embed=discord.Embed(title="Invalid move", description=f"You can only split if you have two cards of the same rank.", color=0xff0000))
+                            continue
+                        player_hand = [[player_hand[0]], [player_hand[1]]]
+                        player_hand[0].append(deck.pop())
+                        player_hand[1].append(deck.pop())
+                        player_value = calculate_hand(player_hand)
+                        split = discord.Embed(title="Split", color=0xff0000)
+                        split.add_field(name="Player", value=f"{player.name}", inline=True)
+                        split.add_field(name="Bet", value=f"{bet}", inline=True)
+                        split.add_field(name="Your Hand", value=f"{', '.join(card[0] + ' of ' + card[1] for card in player_hand[0])} = {calculate_hand(player_hand[0])} | {', '.join(card[0] + ' of ' + card[1] for card in player_hand[1])} = {calculate_hand(player_hand[1])}", inline=False)
+                        split.add_field(name="Dealer's Hand", value=f"{dealer_hand[0][0]} of {dealer_hand[0][1]}, HIDDEN CARD", inline=False)
+                        await thread.send(embed=split)
+
+
+                    if move.content.lower() == "double" and move.channel == thread:
                         # double the bet and draw a card
                         if get_balance(player.id) < bet * 2:
                             await thread.send(embed=discord.Embed(title="Insufficient funds", description=f"You don't have enough money to double your bet.", color=0xff0000))
@@ -135,7 +158,7 @@ async def blackjack(ctx, bet: int=0, client=None):
                             break
                         else:
                             await thread.send(embed=discord.Embed(title="Hidden card", description=f"The dealer's hidden card was {dealer_hand[1][0]} of {dealer_hand[1][1]}.", color=0xff0000))
-                            while dealer_value <= 20 and dealer_value <= player_value:
+                            while dealer_value < 17:
                                 # draw a card and add it to the dealer's hand
                                 dealer_hand.append(deck.pop())
                                 dealer_value = calculate_hand(dealer_hand)
@@ -170,7 +193,7 @@ async def blackjack(ctx, bet: int=0, client=None):
                             await thread.delete()
                             break
                     # handle the player's move
-                    if move.content.lower() == "!hit" and move.channel == thread:
+                    if move.content.lower() == "hit" and move.channel == thread:
                         # draw a card and add it to the player's hand
                         player_hand.append(deck.pop())
                         player_value = calculate_hand(player_hand)
@@ -186,7 +209,7 @@ async def blackjack(ctx, bet: int=0, client=None):
                             await thread.delete()
                             break
                     
-                    elif move.content.lower() == "!surrender" and move.channel == thread:
+                    elif move.content.lower() == "surrender" and move.channel == thread:
                         # surrender the game and lose half the bet
                         await thread.send(embed=discord.Embed(title="Surrender", description=f"You surrendered the game and lost half your bet.", color=0xff0000))
                         update_balance(player.id, bet / 2)
@@ -194,13 +217,13 @@ async def blackjack(ctx, bet: int=0, client=None):
                         await thread.delete()
                         break
                     
-                    elif move.content.lower() == "!stand" and move.channel == thread:
+                    elif move.content.lower() == "stand" and move.channel == thread:
                         break
 
                 # let the dealer take their turn
                 if player_value <= 21:
                     await thread.send(embed=discord.Embed(title="Hidden card", description=f"The dealer's hidden card was {dealer_hand[1][0]} of {dealer_hand[1][1]}.", color=0xff0000))
-                    while dealer_value <= 20 and dealer_value <= player_value:
+                    while dealer_value < 17:
                         # draw a card and add it to the dealer's hand
                         dealer_hand.append(deck.pop())
                         dealer_value = calculate_hand(dealer_hand)

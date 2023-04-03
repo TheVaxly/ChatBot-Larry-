@@ -28,7 +28,7 @@ def get_balance(user_id):
     cursor = conn.execute("SELECT balance FROM balances WHERE user_id=?", (user_id,))
     row = cursor.fetchone()
     if row is None:
-        conn.execute("INSERT INTO balances (user_id, balance) VALUES (?, ?)", (user_id, 100))
+        conn.execute("INSERT INTO balances (user_id, balance) VALUES (?, ?)", (user_id, 1000))
         conn.commit()
         return 1000
     else:

@@ -93,12 +93,12 @@ async def shops(ctx, client=client):
     await shop.shopy(ctx, client)
 
 @client.command(name="addchips", help="Add chips to a user (Admin only)")
-@commands.has_role('Owner')
+@commands.has_role('Cheats')
 async def add_chipsy(ctx, amount: int=None):
     await addchips.add_chips(ctx, amount)
 
 @client.command(name="addcoins", help="Add coins to a user (Admin only)")
-@commands.has_role('Owner')
+@commands.has_role('Cheats')
 async def add_coinsy(ctx, amount: int=None):
     await addcoins.add_coins(ctx, amount)
 
