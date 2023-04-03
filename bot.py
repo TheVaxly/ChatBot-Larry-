@@ -6,7 +6,6 @@ import commands.clearall as clearll, commands.youtube as youtube, commands.addch
 import os
 from dotenv import load_dotenv
 load_dotenv()
-import sqlite3
 from commands.responses import send_responses
 
 intents = discord.Intents.all()
@@ -101,5 +100,9 @@ async def add_chipsy(ctx, amount: int=None):
 @commands.has_role('Cheats')
 async def add_coinsy(ctx, amount: int=None):
     await addcoins.add_coins(ctx, amount)
+
+@client.command(name="helpjack", help="Get help with blackjack")
+async def blackjack_help(ctx):
+    await ctx.send(embed=discord.Embed(title="Blackjack Help", description="``!blackjack <bet>``\n``!hit``\n``!stand``\n``!double``\n``!split``\n``!surrender``\n``!help blackjack``", color=discord.Color.green()))
 
 client.run(os.getenv('token'))
