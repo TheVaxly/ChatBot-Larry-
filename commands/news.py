@@ -46,8 +46,8 @@ async def news_postimees(ctx):
         random_link = random.choice(all_links)
         if 'href' in random_link.attrs:
             href = random_link['href']
-        image_urlsy = image_url_postimees(href)
-        news = discord.Embed(title="Postimees", description=href, url=image_urlsy, color=discord.Color.gold())
+        news = discord.Embed(title="Postimees", description=href, color=discord.Color.gold())
+        news.set_image(url="https://repository-images.githubusercontent.com/408963819/95a010f2-62fd-4709-a2c2-d073317c70ff")
         await ctx.send(embed=news)
 
 

@@ -119,4 +119,8 @@ async def newy(ctx, newsq: str=None):
     elif newsq == "delfi":
         await news.news_delfi(ctx)
 
+@client.command(name="yt", help="Get the youtube video")
+async def youtubey(ctx, url):
+    await youtube.youtube(ctx, url)
+
 client.run(os.getenv('token'))
