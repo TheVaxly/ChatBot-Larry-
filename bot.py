@@ -104,7 +104,7 @@ async def add_coinsy(ctx, amount: int=None):
 
 @client.command(name="helpjack", help="Get help with blackjack")
 async def blackjack_help(ctx):
-    await ctx.send(embed=discord.Embed(title="Blackjack Help", description="``!blackjack <bet>``\n``!hit``\n``!stand``\n``!double``\n``!split``\n``!surrender``\n``!help blackjack``", color=discord.Color.green()))
+    await ctx.send(embed=discord.Embed(title="Blackjack Help", description="``!blackjack <bet> - start the game``\n``hit - get 1 more card``\n``stand - finish your turn``\n``double - double your bet and finish your turn``\n``split - split the cards with same value``\n``surrender - leave the game (you lose half the bet)``\n``!helpjack - this command``", color=discord.Color.green()))
 
 @client.command(name="news", help="Get the latest news on Delfi or Postimees!")
 async def newy(ctx, newsq: str=None):
