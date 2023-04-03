@@ -17,9 +17,9 @@ def get_coin(user_id):
     cursor = conn_coin.execute("SELECT balance FROM coin WHERE user_id=?", (user_id,))
     row = cursor.fetchone()
     if row is None:
-        conn_coin.execute("INSERT INTO coin (user_id, balance) VALUES (?, ?)", (user_id, 0))
+        conn_coin.execute("INSERT INTO coin (user_id, balance) VALUES (?, ?)", (user_id, 1000))
         conn_coin.commit()
-        return 0
+        return 1000
     else:
         return row[0]
 

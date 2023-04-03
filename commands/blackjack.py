@@ -82,7 +82,7 @@ async def blackjack(ctx, bet: int=0, client=None):
 
                 # check if the player has blackjack
                 if player_value == 21:
-                    update_balance(player.id, blackjack_payout)
+                    update_balance(player.id, blackjack_payout + bet)
                     embed = discord.Embed(title="Blackjack", color=0x00ff00)
                     embed.add_field(name="Bet", value=f"{bet}", inline=True)
                     embed.add_field(name="Your Hand", value=f"{', '.join(card[0] + ' of ' + card[1] for card in player_hand)} = {player_value}", inline=False)
@@ -161,7 +161,8 @@ async def blackjack(ctx, bet: int=0, client=None):
                             while dealer_value < 17:
                                 # draw a card and add it to the dealer's hand
                                 dealer_hand.append(deck.pop())
-                                dealer_value = calculate_hand(dealer_hand)
+                                
+                            dealer_value = calculate_hand(dealer_hand)
 
                             # show the final hands
                             final = discord.Embed(title="Final hand", color=0xff0000)
@@ -184,6 +185,7 @@ async def blackjack(ctx, bet: int=0, client=None):
                                 dealer_wins = discord.Embed(title="Dealer wins", description=f"The dealer won with a hand value of {dealer_value}." ,color=0xff0000)
                                 dealer_wins.add_field(name="Bet", value=f"You lost {bet*2} chips.", inline=False)
                                 await thread.send(embed=dealer_wins)
+                                update_balance(player.id, -bet)
                             elif dealer_value < player_value and player_value == 21:
                                 blackjack = discord.Embed(title="Blackjack", description=f"You got blackjack!", color=0xff0000)
                                 blackjack.add_field(name="Bet", value=f"You won {1.5*bet*2} chips.", inline=False)
