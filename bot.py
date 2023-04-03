@@ -2,11 +2,12 @@ from discord.ext import commands
 import discord
 import commands.roll as roll, commands.reddit as reddit, commands.ask as ask, commands.game as game, commands.bal as bal, commands.free_chips as free_chips
 import commands.exchange_chips as exchange_chips, commands.exchange_coins as exchange_coins, commands.shop as shop, commands.leaderboard as leaderboard, commands.blackjack as blackjack
-import commands.clearall as clearll, commands.youtube as youtube, commands.addchips as addchips, commands.addcoins as addcoins
+import commands.clearall as clearll, commands.youtube as youtube, commands.addchips as addchips, commands.addcoins as addcoins, commands.news as news
 import os
 from dotenv import load_dotenv
 load_dotenv()
 from commands.responses import send_responses
+import random
 
 intents = discord.Intents.all()
 intents.members = True
@@ -104,5 +105,18 @@ async def add_coinsy(ctx, amount: int=None):
 @client.command(name="helpjack", help="Get help with blackjack")
 async def blackjack_help(ctx):
     await ctx.send(embed=discord.Embed(title="Blackjack Help", description="``!blackjack <bet> - start the game``\n``hit - get 1 more card``\n``stand - finish your turn``\n``double - double your bet and finish your turn``\n``split - split the cards with same value``\n``surrender - leave the game (you lose half the bet)``\n``!helpjack - this command``", color=discord.Color.green()))
+
+@client.command(name="news", help="Get the latest news on Delfi or Postimees")
+async def newy(ctx, newsq: str=None):
+    if newsq is None:
+        ran = random.randint(1, 2)
+        if ran == 1:
+            await news.news_postimees(ctx)
+        elif ran == 2:
+            await news.news_delfi(ctx)
+    if newsq == "postimees":
+        await news.news_postimees(ctx)
+    elif newsq == "delfi":
+        await news.news_delfi(ctx)
 
 client.run(os.getenv('token'))
