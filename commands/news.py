@@ -28,14 +28,23 @@ def image_url_postimees(url):
     response = requests.get(urly)
     soup = BeautifulSoup(response.content, 'html.parser')
 
-    div_banners = soup.find_all('div', {'class': 'figure__image-wrapper'})
+    div_banners = soup.find_all('img', {'class': 'figure__image'})
 
     for div_banner in div_banners:
-        a_element = div_banner.find('img')
-        if 'src' in a_element.attrs:
-            news_url = a_element['src']
+            news_url = div_banner['src']
             return news_url
 
+def headline_postimees(url):
+    urly = f'{url}'
+    response = requests.get(urly)
+    soup = BeautifulSoup(response.content, 'html.parser')
+
+    div_banners = soup.find_all('span', {'class': 'article__headline--exclamation'})
+
+    for div_banner in div_banners:
+            news_url = div_banner['span']
+            return news_url
+    
 async def news_postimees(ctx):
     url = 'https://www.postimees.ee/latest'
     response = requests.get(url)
@@ -46,8 +55,9 @@ async def news_postimees(ctx):
         random_link = random.choice(all_links)
         if 'href' in random_link.attrs:
             href = random_link['href']
+        image_urls = image_url_postimees(href)
         news = discord.Embed(title="Postimees", description=href, color=discord.Color.gold())
-        news.set_image(url="https://repository-images.githubusercontent.com/408963819/95a010f2-62fd-4709-a2c2-d073317c70ff")
+        news.set_image(url="https://f12.pmo.ee/quzPCS8ney-Vpz-Vz5hGm_ubbpo=/155x155/smart/nginx/o/2022/03/07/14411686t1hca79.png")
         await ctx.send(embed=news)
 
 
