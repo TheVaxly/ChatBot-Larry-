@@ -160,9 +160,8 @@ async def blackjack(ctx, bet: int=0, client=None):
                             await thread.send(embed=discord.Embed(title="Hidden card", description=f"The dealer's hidden card was {dealer_hand[1][0]} of {dealer_hand[1][1]}.", color=0xff0000))
                             while dealer_value < 17:
                                 # draw a card and add it to the dealer's hand
-                                dealer_hand.append(deck.pop())
-                                
-                            dealer_value = calculate_hand(dealer_hand)
+                                dealer_hand.append(deck.pop())                              
+                                dealer_value = calculate_hand(dealer_hand)
 
                             # show the final hands
                             final = discord.Embed(title="Final hand", color=0xff0000)

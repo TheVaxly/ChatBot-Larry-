@@ -3,7 +3,7 @@ import discord
 import commands.roll as roll, commands.reddit as reddit, commands.ask as ask, commands.game as game, commands.bal as bal, commands.free_chips as free_chips
 import commands.exchange_chips as exchange_chips, commands.exchange_coins as exchange_coins, commands.shop as shop, commands.leaderboard as leaderboard, commands.blackjack as blackjack
 import commands.clearall as clearll, commands.youtube as youtube, commands.addchips as addchips, commands.addcoins as addcoins, commands.news as news
-import os
+import os, commands.higherlower as higherlower
 from dotenv import load_dotenv
 load_dotenv()
 from commands.responses import send_responses
@@ -58,8 +58,7 @@ async def larry(int: discord.Interaction, question: str):
 @client.command(name='rps', help="Play rock paper scissors")
 async def rps(ctx, message=None):
     await game.game(ctx, message)
-    
-# command to play blackjack with individual user balances
+
 @client.command(name='blackjack', help="Play blackjack")
 async def blackjacks(ctx, bet: int=0, client=client):
     await blackjack.blackjack(ctx, bet, client)
@@ -122,5 +121,9 @@ async def newy(ctx, newsq: str=None):
 @client.command(name="yt", help="Get the youtube video")
 async def youtubey(ctx, url):
     await youtube.youtube(ctx, url)
+
+@client.command(name="hl", help="Play higher or lower")
+async def higherlowery(ctx, client=client):
+    await higherlower.higherlower(ctx, client)
 
 client.run(os.getenv('token'))
