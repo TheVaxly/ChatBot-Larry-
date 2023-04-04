@@ -11,7 +11,7 @@ async def ask_command(ctx, *, user_input):
             await self.message.edit(view=self)
         @discord.ui.button(label="New Response", style=discord.ButtonStyle.success, emoji="😏", custom_id=f"new_{ctx.message.id}")
         async def delete(self, interaction: discord.Interaction, button: discord.ui.Button):
-            if button.custom_id == f"new_{ctx.message.id}":
+            if button.custom_id == f"new_{ctx.message.id}" and interaction.user.id == ctx.author.id:
                 embeds=discord.Embed(title="Question: " + user_input, description=symbol + responses.send_responses(user_input) + symbol, color=discord.Color.green())
                 embeds.set_footer(text="Asked by " + user_name)
                 await interaction.response.edit_message(embed=embeds, view=new())
