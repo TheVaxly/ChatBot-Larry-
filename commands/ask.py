@@ -25,6 +25,6 @@ async def ask_command(ctx, *, user_input):
 
         embed=discord.Embed(title=f"Question: {user_input}", description=f"{symbol}{bot_response}{symbol}", color=discord.Color.green())
         embed.set_footer(text=f"Asked by {user_name}")
-        await ctx.send(embed=embed, view=new())
+        await ctx.send(embed=embed, view=new(timeout=10 * 60))
     except:
         await ctx.send("``Please specify a question.``")   
