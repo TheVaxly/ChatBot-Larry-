@@ -32,7 +32,6 @@ async def blackjack(ctx, bet: int=0, client=None):
     current_balance = []
     balance = get_balance(ctx.author.id)
     current_balance.append(balance)
-    print(current_balance)
     if bet < 0 or bet > balance or bet == 0:
         await ctx.send(embed=discord.Embed(title="Invalid bet", description=f"Please bet between 1 and {get_balance(ctx.author.id)}", color=0xff0000))
         return
@@ -45,13 +44,6 @@ async def blackjack(ctx, bet: int=0, client=None):
         
         # find the category channel
         category_channel = client.get_channel(list_category_id[0])
-
-        # check if a game is already in progress
-        threads = category_channel.threads
-        for thread in threads:
-            if thread.name == f"{player.name} Blackjac":
-                await ctx.send(embed=discord.Embed(title="Game in progress", description=f"You already have a game in progress. Please finish that game before starting a new one.", color=0xff0000))
-                return
 
         # create the thread under the category channel
         thread = await category_channel.create_thread(name=f"{player.name} Blackjack", type=discord.ChannelType.public_thread)

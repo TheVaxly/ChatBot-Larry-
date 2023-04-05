@@ -46,7 +46,7 @@ async def higherlower(ctx, client):
     if (response.content.lower() == 'higher' and obj1_value > obj2_value) or \
        (response.content.lower() == 'lower' and obj1_value < obj2_value):
         await thread.send(f"**Correct!** **{obj2_name}** value is {'higher' if obj2_value > obj1_value else 'lower'} than **{obj1_name}**'s value.")
-        obj1_name, obj1_value = obj2_name, obj2_value
+        obj2_name, obj2_value = obj1_name, obj1_value
     else:
         await thread.send(f"**Sorry!**. It's value is {'higher' if obj2_value > obj1_value else 'lower'} than **{obj1_name}**'s value. **Better luck next time!**")
         await asyncio.sleep(10)
@@ -62,7 +62,7 @@ async def higherlower(ctx, client):
         # Select a new random object and ask the user to guess if its value is higher or lower than the previous object's value
         obj = random.choice(data["objects"])
         obj_name, obj_value = obj["name"], obj["value"]
-        message = await thread.send(f"Is **{obj_name}**'s value higher or lower than **{obj1_name}**'s ({obj1_value}) value? Type 'higher' or 'lower'.")
+        message = await thread.send(f"Is **{obj_name}**'s value higher or lower than **{obj2_name}**'s ({obj2_value}) value? Type 'higher' or 'lower'.")
         
         try:
             # Wait for the user's response
