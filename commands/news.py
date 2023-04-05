@@ -32,7 +32,8 @@ def image_url_postimees(url):
 
     for div_banner in div_banners:
             news_url = div_banner['src']
-            return news_url
+            new_news_url = news_url.replace('//', 'https://')
+    return new_news_url
 
 def headline_postimees(url):
     urly = f'{url}'
@@ -57,7 +58,7 @@ async def news_postimees(ctx):
             href = random_link['href']
         image_urls = image_url_postimees(href)
         news = discord.Embed(title="Postimees", description=href, color=discord.Color.gold())
-        news.set_image(url="https://f12.pmo.ee/quzPCS8ney-Vpz-Vz5hGm_ubbpo=/155x155/smart/nginx/o/2022/03/07/14411686t1hca79.png")
+        news.set_image(url=image_urls)
         await ctx.send(embed=news)
 
 
