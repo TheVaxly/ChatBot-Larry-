@@ -30,5 +30,10 @@ async def ask_command(ctx, *, user_input):
         await ctx.send(embed=discord.Embed(title="Error", description="Something went wrong. Please try again.", color=discord.Color.red()))
 
 async def img(ctx, *, user_input):
-    response = responses.generate_image(user_input)
-    await ctx.send(response)
+    try:
+        response = responses.generate_image(user_input)
+        embed=discord.Embed(title=f"{user_input}", color=discord.Color.green())
+        embed.set_image(url=response)
+        await ctx.send(embed=embed)
+    except:
+        await ctx.send(embed=discord.Embed(title="Error", description="Something went wrong. Please try again.", color=discord.Color.red()))

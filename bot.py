@@ -126,8 +126,10 @@ async def youtubey(ctx, url):
 async def higherlowery(ctx, client=client):
     await higherlower.higherlower(ctx, client)
 
+"""
 @client.command(name="img", help="Get an image from Larry")
 async def img(ctx, *, user_input="Red impostor"):
     await ask.img(ctx, user_input=user_input)
+"""
 
 client.run(os.getenv('token'))
