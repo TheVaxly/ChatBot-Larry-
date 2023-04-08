@@ -1,4 +1,5 @@
 import commands.responses as responses
+import commands.img
 import discord
 
 symbol = "```"
@@ -31,7 +32,7 @@ async def ask_command(ctx, *, user_input):
 
 async def img(ctx, *, user_input):
     try:
-        response = responses.generate_image(user_input)
+        response = commands.img.gen(user_input)
         embed=discord.Embed(title=f"{user_input}", color=discord.Color.green())
         embed.set_image(url=response)
         await ctx.send(embed=embed)

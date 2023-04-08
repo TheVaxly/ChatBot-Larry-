@@ -16,11 +16,3 @@ def send_responses(prompt):
 
     bot_response = response.choices[0].text.strip()
     return bot_response
-
-def generate_image(prompt):
-    response = openai.Image.create(
-        prompt=prompt,
-        model="image-alpha-001"
-    )
-    image_url = response['data'][0]['url']
-    return image_url
