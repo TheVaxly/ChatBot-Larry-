@@ -124,7 +124,7 @@ async def youtubey(ctx, url):
 
 @client.command(name="hl", help="Play higher or lower")
 async def higherlowery(ctx, client=client):
-    await higherlower.higherlower(ctx, client)
+    await higherlower.on_message(ctx, client)
 
 """
 @client.command(name="img", help="Get an image from Larry")

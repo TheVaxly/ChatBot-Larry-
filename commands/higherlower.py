@@ -3,83 +3,87 @@ import random
 import asyncio
 import discord
 
+used = 0
+used2 = 0
+new_object = []
+new_object_value = []
 
-async def higherlower(ctx, client):
-    with open('db/db.json', 'r') as f:
-        data = json.load(f)
-    
-    # Select two random objects from the list
+# Load data from db.json file
+with open('db/db.json', 'r') as f:
+    data = json.load(f)
+
+# Function to generate a new question
+def get_question():
+    global used, used2, new_object, new_object_value
+    # Choose two random objects
     obj1, obj2 = random.sample(data["objects"], 2)
-    obj1_name, obj1_value = obj1["name"], obj1["value"]
-    obj2_name, obj2_value = obj2["name"], obj2["value"]
-
-    player = ctx.author
-    list_category_id = []
-    category_id = ctx.channel.id
-    list_category_id.append(category_id)
-    category_channel = client.get_channel(list_category_id[0])
-    threads = category_channel.threads
-
-    thread = await category_channel.create_thread(name=f"{player.name} Blackjack", type=discord.ChannelType.public_thread)
-
-    await thread.add_user(player)
-    
-    # Ask the user to guess if the first object's value is higher or lower than the second object's value
-    message = await thread.send(f"Is **{obj1_name}**'s value higher or lower than **{obj2_name}**'s ({obj2_value}) value? Type 'higher' or 'lower'.")
-    
-    def check(m):
-        return m.author == ctx.author and m.channel == ctx.channel and m.content.lower() in ['higher', 'lower', "stop"]
-    
-    try:
-        response = await client.wait_for('message', check=lambda m: m.author == player)
-        if response.content.lower() == "stop":
-            await thread.send("Game stopped.")
-            await asyncio.sleep(10)
-            await thread.delete()
-            return
-    except asyncio.TimeoutError:
-        await thread.send("Time's up! You took too long to respond.")
-        await asyncio.sleep(10)
-        await thread.delete()
-        return
-    # Determine if the user's guess was correct and send a message with the result
-    if (response.content.lower() == 'higher' and obj1_value > obj2_value) or \
-       (response.content.lower() == 'lower' and obj1_value < obj2_value):
-        await thread.send(f"**Correct!** **{obj2_name}** value is {'higher' if obj2_value > obj1_value else 'lower'} than **{obj1_name}**'s value.")
-        obj2_name, obj2_value = obj1_name, obj1_value
-    else:
-        await thread.send(f"**Sorry!**. It's value is {'higher' if obj2_value > obj1_value else 'lower'} than **{obj1_name}**'s value. **Better luck next time!**")
-        await asyncio.sleep(10)
-        await thread.delete()
-        return
-    
-    while True:
-        if response.content.lower() == "stop":
-            await thread.send("Game stopped.")
-            await asyncio.sleep(10) 
-            await thread.delete()
-            return
-        # Select a new random object and ask the user to guess if its value is higher or lower than the previous object's value
-        obj = random.choice(data["objects"])
-        obj_name, obj_value = obj["name"], obj["value"]
-        message = await thread.send(f"Is **{obj_name}**'s value higher or lower than **{obj2_name}**'s ({obj2_value}) value? Type 'higher' or 'lower'.")
-        
-        try:
-            # Wait for the user's response
-            response = await client.wait_for('message', check=lambda m: m.author == player)
-        except asyncio.TimeoutError:
-            await thread.send("Time's up! You took too long to respond.")
-            await asyncio.sleep(10)
-            await thread.delete()
-            return
-        
-        # Determine if the user's guess was correct and send a message with the result
-        if (response.content.lower() == 'higher' and obj_value > obj1_value) or \
-           (response.content.lower() == 'lower' and obj_value < obj1_value):
-            await thread.send(f"**Correct!** **{obj_name}** value is {'higher' if obj_value > obj1_value else 'lower'} than **{obj1_name}**'s value.")
-            obj1_name, obj1_value = obj_name, obj_value
+    object1, object1_value = obj1["name"], obj1["value"]
+    object2, object2_value = obj2["name"], obj2["value"]
+    # Check if the attribute value for object1 is higher or lower than object2
+    if used == 0:
+        if object1_value > object2_value:
+            answer = 'higher'
         else:
-            await thread.send(f"**Sorry!**. It's value is {'higher' if obj_value > obj1_value else 'lower'} than **{obj1_name}**'s value. **Better luck next time!**")
-            await asyncio.sleep(10)
-            await thread.delete()
-            return
+            answer = 'lower'
+    elif used == 1:
+        if new_object_value[used2] > object2_value:
+            answer = 'higher'
+        else:
+            answer = 'lower'
+    if used == 0:
+        question = discord.Embed(title=f'Is {object1}\'s {object1_value:,} value higher or lower than {object2}\'s value?', color=discord.Color.green())
+        used += 1
+        new_object.append(object2)
+        new_object_value.append(object2_value)
+        print(new_object, new_object_value)
+    elif used == 1:
+        question = discord.Embed(title=f'Is {new_object[used2]}\'s {new_object_value[used2]:,} value higher or lower than {object2}\'s value?', color=discord.Color.green())
+        used2 += 1
+        new_object.append(object2)
+        new_object_value.append(object2_value)
+        print(new_object, new_object_value)
+
+    return question, answer
+
+async def on_message(ctx, client):
+        channel = ctx.channel
+        player = ctx.author
+        question, answer = get_question()
+        thread = await channel.create_thread(name=f"{player.name}'s Higher or Lower Game", type=discord.ChannelType.public_thread)
+        await thread.add_user(player)
+        await thread.send(embed=question)
+        
+        # Game loop
+        while True:
+            # Wait for player input
+            try:
+                player_input = await client.wait_for('message', check=lambda m: m.author == player, timeout=10*60)
+            except asyncio.TimeoutError:
+                await thread.send(embed=discord.Embed(title="Timed out.", description="``You took too long to respond.``", color=discord.Color.red()))
+                await asyncio.sleep(10)
+                await thread.delete()
+                break
+            
+            # Check if player surrenders
+            if player_input.content.lower() == 'surrender':
+                await thread.send(embed=discord.Embed(title="Game over", description=f"You surrendered. The correct answer was {answer}.", color=discord.Color.gold()))
+                await asyncio.sleep(10)
+                await thread.delete()
+                break
+            
+            # Check if player answer is correct
+            if player_input.content.lower() == answer:
+                await thread.send(embed=discord.Embed(title="Correct!", description=f"The correct answer was {answer}.", color=discord.Color.green()))
+                question, answer = get_question()
+                await thread.send(embed=question)
+            elif player_input.content.lower() == "lower" or player_input.content.lower() == "higher" and player_input.content.lower() != answer:
+                used = 0
+                used2 = 0
+                del new_object[:]
+                del new_object_value[:]
+                await thread.send(embed=discord.Embed(title="Incorrect!", description=f"The correct answer was {answer}.", color=discord.Color.red()))
+                await asyncio.sleep(10)
+                await thread.delete()
+                break
+            else:
+                continue
