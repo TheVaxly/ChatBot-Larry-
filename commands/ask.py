@@ -27,4 +27,8 @@ async def ask_command(ctx, *, user_input):
         embed.set_footer(text=f"Asked by {user_name}")
         await ctx.send(embed=embed, view=new(timeout=10 * 60))
     except:
-        await ctx.send("``Please specify a question.``")   
+        await ctx.send(embed=discord.Embed(title="Error", description="Something went wrong. Please try again.", color=discord.Color.red()))
+
+async def img(ctx, *, user_input):
+    response = responses.generate_image(user_input)
+    await ctx.send(response)
