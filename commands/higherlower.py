@@ -2,12 +2,20 @@ import json
 import random
 import asyncio
 import discord
+import sqlite3
 
 used = 0
 used2 = 0
 new_object = []
 new_object_value = []
 
+conn = sqlite3.connect('db/points.db')
+c = conn.cursor()
+
+# Create the table if it doesn't exist
+c.execute('''CREATE TABLE IF NOT EXISTS points
+             (user_id INTEGER PRIMARY KEY, points INTEGER)''')
+conn.commit()
 # Load data from db.json file
 with open('db/db.json', 'r') as f:
     data = json.load(f)
@@ -76,14 +84,31 @@ async def on_message(ctx, client):
                 await thread.send(embed=discord.Embed(title="Correct!", description=f"The correct answer was {answer}.", color=discord.Color.green()))
                 question, answer = get_question()
                 await thread.send(embed=question)
+                points = 0
+                points += 1
+                c.execute("SELECT points FROM points WHERE user_id=?", (player.id,))
+                res = c.fetchone()
+                if res is None:
+                    c.execute("INSERT INTO points (user_id, points) VALUES (?, 1)", (player.id,))
+                    conn.commit()
+                else:
+                    if res[0] < points:
+                        c.execute("UPDATE points SET points=? WHERE user_id=?", (points, player.id))
+                        conn.commit()
             elif player_input.content.lower() == "lower" or player_input.content.lower() == "higher" and player_input.content.lower() != answer:
-                used = 0
-                used2 = 0
-                del new_object[:]
-                del new_object_value[:]
+                points = 0
                 await thread.send(embed=discord.Embed(title="Incorrect!", description=f"The correct answer was {answer}.", color=discord.Color.red()))
                 await asyncio.sleep(10)
                 await thread.delete()
                 break
             else:
                 continue
+
+async def points(ctx):
+    player = ctx.author
+    c.execute("SELECT points FROM points WHERE user_id=?", (player.id,))
+    res = c.fetchone()
+    if res is None:
+        await ctx.send(embed=discord.Embed(title="You have no points.", color=discord.Color.red()))
+    else:
+        await ctx.send(embed=discord.Embed(title=f"You have {res[0]} points.", color=discord.Color.green()))

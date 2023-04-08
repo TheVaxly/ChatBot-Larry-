@@ -131,5 +131,8 @@ async def higherlowery(ctx, client=client):
 async def img(ctx, *, user_input="Red impostor"):
     await ask.img(ctx, user_input=user_input)
 
+@client.command(name="points", help="Check your higher or lower points")
+async def points(ctx):
+    await higherlower.points(ctx)
 
 client.run(os.getenv('token'))
