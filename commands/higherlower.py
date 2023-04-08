@@ -8,6 +8,7 @@ used = 0
 used2 = 0
 new_object = []
 new_object_value = []
+points = 0
 
 conn = sqlite3.connect('db/points.db')
 c = conn.cursor()
@@ -54,6 +55,7 @@ def get_question():
     return question, answer
 
 async def on_message(ctx, client):
+        global points, used, used2, new_object, new_object_value
         channel = ctx.channel
         player = ctx.author
         question, answer = get_question()
@@ -74,6 +76,10 @@ async def on_message(ctx, client):
             
             # Check if player surrenders
             if player_input.content.lower() == 'surrender':
+                used = 0
+                used2 = 0
+                new_object = []
+                new_object_value = []
                 await thread.send(embed=discord.Embed(title="Game over", description=f"You surrendered. The correct answer was {answer}.", color=discord.Color.gold()))
                 await asyncio.sleep(10)
                 await thread.delete()
@@ -84,7 +90,6 @@ async def on_message(ctx, client):
                 await thread.send(embed=discord.Embed(title="Correct!", description=f"The correct answer was {answer}.", color=discord.Color.green()))
                 question, answer = get_question()
                 await thread.send(embed=question)
-                points = 0
                 points += 1
                 c.execute("SELECT points FROM points WHERE user_id=?", (player.id,))
                 res = c.fetchone()
@@ -97,6 +102,10 @@ async def on_message(ctx, client):
                         conn.commit()
             elif player_input.content.lower() == "lower" or player_input.content.lower() == "higher" and player_input.content.lower() != answer:
                 points = 0
+                used = 0
+                used2 = 0
+                new_object = []
+                new_object_value = []
                 await thread.send(embed=discord.Embed(title="Incorrect!", description=f"The correct answer was {answer}.", color=discord.Color.red()))
                 await asyncio.sleep(10)
                 await thread.delete()
@@ -104,7 +113,7 @@ async def on_message(ctx, client):
             else:
                 continue
 
-async def points(ctx):
+async def pointsy(ctx):
     player = ctx.author
     c.execute("SELECT points FROM points WHERE user_id=?", (player.id,))
     res = c.fetchone()
