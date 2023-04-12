@@ -1,6 +1,7 @@
 import openai
+import os
 
-OPENAI_API_KEY = "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"
+OPENAI_API_KEY = os.getenv("img")
 
 openai.api_key = OPENAI_API_KEY
 
