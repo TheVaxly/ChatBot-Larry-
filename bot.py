@@ -1,13 +1,13 @@
-from discord.ext import commands
+import random
 import discord
+from dotenv import load_dotenv
+from discord.ext import commands
+from commands.responses import send_responses
+import os, commands.higherlower as higherlower
+import commands.clearall as clearll, commands.youtube as youtube, commands.addchips as addchips, commands.addcoins as addcoins, commands.news as news
 import commands.roll as roll, commands.reddit as reddit, commands.ask as ask, commands.game as game, commands.bal as bal, commands.free_chips as free_chips
 import commands.exchange_chips as exchange_chips, commands.exchange_coins as exchange_coins, commands.shop as shop, commands.leaderboard as leaderboard, commands.blackjack as blackjack
-import commands.clearall as clearll, commands.youtube as youtube, commands.addchips as addchips, commands.addcoins as addcoins, commands.news as news
-import os, commands.higherlower as higherlower
-from dotenv import load_dotenv
 load_dotenv()
-from commands.responses import send_responses
-import random
 
 intents = discord.Intents.all()
 intents.members = True
@@ -131,7 +131,7 @@ async def higherlowery(ctx, client=client):
 async def img(ctx, *, user_input="Red impostor"):
     await ask.img(ctx, user_input=user_input)
 
-@client.command(name="points", help="Check your higher or lower points")
+@client.command(name="highscore", help="Check your higher or lower highscore")
 async def points(ctx):
     await higherlower.pointsy(ctx)
 

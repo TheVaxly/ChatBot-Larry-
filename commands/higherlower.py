@@ -118,6 +118,6 @@ async def pointsy(ctx):
     c.execute("SELECT points FROM points WHERE user_id=?", (player.id,))
     res = c.fetchone()
     if res is None:
-        await ctx.send(embed=discord.Embed(title="You have no points.", color=discord.Color.red()))
+        await ctx.send(embed=discord.Embed(title="You have no highscore.", color=discord.Color.red()))
     else:
-        await ctx.send(embed=discord.Embed(title=f"You have {res[0]} points.", color=discord.Color.green()))
+        await ctx.send(embed=discord.Embed(title=f"Your higher or lower highscore is {res[0]}", color=discord.Color.green()))
