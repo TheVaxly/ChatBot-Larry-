@@ -3,7 +3,7 @@ import discord
 from dotenv import load_dotenv
 from discord.ext import commands
 from commands.responses import send_responses
-import os, commands.higherlower as higherlower
+import os, commands.higherlower as higherlower, commands.buy as buy
 import commands.clearall as clearll, commands.youtube as youtube, commands.addchips as addchips, commands.addcoins as addcoins, commands.news as news
 import commands.roll as roll, commands.reddit as reddit, commands.ask as ask, commands.game as game, commands.bal as bal, commands.free_chips as free_chips
 import commands.exchange_chips as exchange_chips, commands.exchange_coins as exchange_coins, commands.shop as shop, commands.leaderboard as leaderboard, commands.blackjack as blackjack
@@ -134,5 +134,9 @@ async def img(ctx, *, user_input="Red impostor"):
 @client.command(name="highscore", help="Check your higher or lower highscore")
 async def points(ctx):
     await higherlower.pointsy(ctx)
+
+@client.command(name="buy", help="Buy an item from the shop")
+async def buyy(ctx, item: str=None):
+    await buy.buys(ctx, item)
 
 client.run(os.getenv('token'))
