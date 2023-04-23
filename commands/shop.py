@@ -3,14 +3,18 @@ from discord.ext import commands
 import asyncio
 
 async def shopy(ctx, client):
-    page_one = discord.Embed(title="Shop", description="Use Larry coins to buy items", color=0x00ff00)
-    page_one.add_field(name="10 Larry coins", value="Item 1\nItem 2\nItem 3", inline=False)
-    page_one.add_field(name="25 Larry coins", value="Item 4\nItem 5\nItem 6", inline=False)
+    page_one = discord.Embed(title="Shop", description="Use Larry coins to buy items with !buy", color=0x00ff00)
+    page_one.add_field(name="1 Larry coin fishbait", value="Basic", inline=False)
+    page_one.add_field(name="3 Larry coins fishbait", value="Advanced", inline=False)
+    page_one.add_field(name="5 Larry coins fishbait", value="Master", inline=False)
+    page_one.add_field(name="8 Larry coins fishbait", value="Legendary", inline=False)
     page_one.set_footer(text="Page 1/2")
 
-    page_two = discord.Embed(title="Shop", description="Use Larry coins to buy items", color=0x00ff00)
-    page_two.add_field(name="50 Larry coins", value="Item 7\nItem 8\nItem 9", inline=False)
-    page_two.add_field(name="75 Larry coins", value="Item 10\nItem 11\nItem 12", inline=False)
+    page_two = discord.Embed(title="Shop", description="Use Larry coins to buy items with !buy", color=0x00ff00)
+    page_two.add_field(name="10 Larry coins fishbait", value="Mythical", inline=False)
+    page_two.add_field(name="20 Larry coins fishbait", value="Ultimate", inline=False)
+    page_two.add_field(name="50 Larry coins fishbait", value="Divine", inline=False)
+    page_two.add_field(name="100 Larry coins fishbait", value="Sus", inline=False)
     page_two.set_footer(text="Page 2/2")
 
     pages = [page_one, page_two]

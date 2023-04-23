@@ -3,7 +3,7 @@ import discord
 from dotenv import load_dotenv
 from discord.ext import commands
 from commands.responses import send_responses
-import os, commands.higherlower as higherlower, commands.buy as buy
+import os, commands.higherlower as higherlower, commands.buy as buy, sqlite3
 import commands.clearall as clearll, commands.youtube as youtube, commands.addchips as addchips, commands.addcoins as addcoins, commands.news as news
 import commands.roll as roll, commands.reddit as reddit, commands.ask as ask, commands.game as game, commands.bal as bal, commands.free_chips as free_chips
 import commands.exchange_chips as exchange_chips, commands.exchange_coins as exchange_coins, commands.shop as shop, commands.leaderboard as leaderboard, commands.blackjack as blackjack
@@ -136,7 +136,35 @@ async def points(ctx):
     await higherlower.pointsy(ctx)
 
 @client.command(name="buy", help="Buy an item from the shop")
-async def buyy(ctx, item: str=None):
-    await buy.buys(ctx, item)
+async def buyy(ctx, item: str=None, amount: int=1):
+    await buy.buy(ctx, item, amount)
+
+# Create the database connection
+conn = sqlite3.connect('db/inv.db')
+
+@client.command(name="inv", help="Check your inventory")
+async def inv(ctx):
+    user_id = str(ctx.author.id)
+    c = conn.cursor()
+    c.execute("SELECT * FROM inv WHERE user_id=?", (user_id,))
+    row = c.fetchone()
+
+    if row is None:
+        await ctx.send("You don't have any items in your inventory.")
+    else:
+        # Create an embed message
+        embeds = discord.Embed(title=f"{ctx.author.name}'s inventory", color=discord.Color.gold())
+
+        # Loop through each item in the inventory and add it to the embed
+        items = ["basic", "advanced", "master", "legendary", "mythical", "ultimate", "sus"]
+        for item in items:
+            amount = row[items.index(item) + 1]
+            embeds.add_field(name=item, value=amount, inline=True)
+
+        await ctx.send(embed=embeds)
+
+@client.command(name="sell", help="Sell an item from your inventory")
+async def selly(ctx, item: str=None, amount: int=1):
+    await buy.sell(ctx, item, amount)
 
 client.run(os.getenv('token'))
