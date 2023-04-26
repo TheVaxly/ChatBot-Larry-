@@ -3,7 +3,8 @@ import discord
 from dotenv import load_dotenv
 from discord.ext import commands
 from commands.responses import send_responses
-import os, commands.higherlower as higherlower, commands.buy as buy, sqlite3
+import commands.card as card, commands.cards as cards
+import os, commands.higherlower as higherlower, commands.buy as buy, sqlite3, commands.cards as cards
 import commands.clearall as clearll, commands.youtube as youtube, commands.addchips as addchips, commands.addcoins as addcoins, commands.news as news
 import commands.roll as roll, commands.reddit as reddit, commands.ask as ask, commands.game as game, commands.bal as bal, commands.free_chips as free_chips
 import commands.exchange_chips as exchange_chips, commands.exchange_coins as exchange_coins, commands.shop as shop, commands.leaderboard as leaderboard, commands.blackjack as blackjack
@@ -166,5 +167,18 @@ async def inv(ctx):
 @client.command(name="sell", help="Sell an item from your inventory")
 async def selly(ctx, item: str=None, amount: int=1):
     await buy.sell(ctx, item, amount)
+
+@client.command(name="cards", help="Check your cards")
+async def view_cards(ctx, arg=None):
+    if arg == "all":
+        await cards.carddd(ctx)
+    elif arg is None:
+        await card.view_collection(ctx)
+    else:
+        return
+
+@client.command(name="addcard", help="Add a card to your collection")
+async def addcardy(ctx, card_id: int):
+    await card.add_card(ctx, card_id)
 
 client.run(os.getenv('token'))
