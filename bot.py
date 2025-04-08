@@ -6,8 +6,9 @@ from commands.responses import send_responses
 import commands.card as card, commands.cards as cards
 import os, commands.higherlower as higherlower, commands.buy as buy, sqlite3, commands.cards as cards
 import commands.clearall as clearll, commands.youtube as youtube, commands.addchips as addchips, commands.addcoins as addcoins, commands.news as news
-import commands.roll as roll, commands.reddit as reddit, commands.ask as ask, commands.game as game, commands.bal as bal, commands.free_chips as free_chips
+import commands.roll as roll, commands.ask as ask, commands.game as game, commands.bal as bal, commands.free_chips as free_chips
 import commands.exchange_chips as exchange_chips, commands.exchange_coins as exchange_coins, commands.shop as shop, commands.leaderboard as leaderboard, commands.blackjack as blackjack
+import commands.reddit as reddit
 load_dotenv()
 
 intents = discord.Intents.all()
@@ -33,13 +34,6 @@ async def roll_command(ctx, *, dice: str = ''):
 @commands.has_role('Owner')
 async def clear_alls(ctx, client=client):
     await clearll.clear_all(ctx, client=client)
-
-@client.command(name='reddit', help="Get a random post from a subreddit")
-async def meme(ctx, message=None):
-    if message is None:
-        await ctx.send(embed=discord.Embed(title="Invalid", description="``Please provide a subreddit.``", color=discord.Color.red()))
-        return
-    await reddit.meme(ctx, message)
 
 @client.command(name='subs', help="Get the subscriber count of a channel (Probs doesn't work)")
 async def subscribersy(ctx, user_input):
@@ -179,5 +173,9 @@ async def view_cards(ctx, arg=None):
 @client.command(name="addcard", help="Add a card to your collection")
 async def addcardy(ctx, card_id: int):
     await card.add_card(ctx, card_id)
+
+@client.command(name="reddit", help="!reddit <subreddit> [sort] [time] [type] - Fetches a post. Sort: hot(d),new,top,rising,best. Time(top only): hour,day(d),week,month,year,all. Type: image,video,gallery,all(d).")
+async def reddity(ctx, subreddit: str, *args):
+    await reddit.reddit(ctx, subreddit, *args)
 
 client.run(os.getenv('token'))

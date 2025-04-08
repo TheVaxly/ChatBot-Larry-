@@ -29,11 +29,14 @@ def image_url_postimees(url):
     soup = BeautifulSoup(response.content, 'html.parser')
 
     div_banners = soup.find_all('img', {'class': 'figure__image'})
+    new_news_url = None  # Initialize the variable
 
     for div_banner in div_banners:
-            news_url = div_banner['src']
-            new_news_url = news_url.replace('//', 'https://')
-    return new_news_url
+        news_url = div_banner['src']
+        new_news_url = news_url.replace('//', 'https://')
+        break  # We only need the first matching image
+
+    return new_news_url if new_news_url else "https://www.postimees.ee/static/img/logo.png"  # Return default image if no image found
 
 def headline_postimees(url):
     urly = f'{url}'
